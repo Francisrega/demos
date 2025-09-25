@@ -11,8 +11,7 @@ You may add an optional video, using this format: [](youtube:YouTube video id)
 ### Try the Interactive Demo
 
 Launch the HTML demo here:
-
-* <a href="./oracle-json-duality-demo-v7.html" target="_blank">Open the Interactive Demo</a>
+- <a href="./json.html" target="_blank">Open the Interactive Demo</a>
 
 What you’ll see:
 
@@ -39,9 +38,13 @@ Key benefits:
 * **Lower complexity & cost**: Unified data platform reduces middleware, duplication, and latency
 
 ## Learn More
+- Product Page: https://www.oracle.com/database/what-is-json/technologies/database/
 
-* LiveLab: Build with JSON Duality — [https://apexapps.oracle.com/pls/apex/f?p=133:180:16090110673701::::wid:3635](https://apexapps.oracle.com/pls/apex/f?p=133:180:16090110673701::::wid:3635)
-* Oracle Database 23ai Product Page — [https://www.oracle.com/database/](https://www.oracle.com/database/)
-* Oracle JSON & Duality Views (Docs) — [https://docs.oracle.com/en/database/oracle/oracle-database/23/](https://docs.oracle.com/en/database/oracle/oracle-database/23/)
+- Related Livelabs Workshop : https://livelabs.oracle.com/pls/apex/f?p=133:180:14131857784464::::wid:3635
 
-> Tip: Host the HTML file from this workshop (e.g., `oracle-json-duality-demo-v7.html`) alongside this page so the **Open the Interactive Demo** link works out of the box.
+- Oracle JSON Developer's Guide (Docs) : https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/overview-json-oracle-database.html
+
+## Acknowledgements
+- Author — Francis Regalado
+- Contributors — David Start, William Masdon
+- Last Updated By/Date — Francis Regalado, September 2025
