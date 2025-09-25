@@ -40,7 +40,7 @@ Key benefits:
 ## Learn More
 - Product Page: https://www.oracle.com/database/what-is-json/technologies/database/
 
-- Related Livelabs Workshop : https://livelabs.oracle.com/pls/apex/f?p=133:180:14131857784464::::wid:3635
+- Related Livelabs Workshop : https://livelabs.oracle.com/pls/apex/r/dbpm/livelabs/view-workshop?wid=3635
 
 - Oracle JSON Developer's Guide (Docs) : https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/overview-json-oracle-database.html
 
