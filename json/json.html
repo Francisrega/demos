@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Oracle Database 23ai — JSON Relational Duality (Interactive Demo)</title>
+<style>
+/*
+===============================================================================
+Oracle Database 23ai — JSON Relational Duality (Interactive Demo)
+-------------------------------------------------------------------------------
+- One-file demo: HTML + CSS + JS only. No external libs or fonts.
+- UX patterned after the provided template: variables, grid/cards, stepper, code,
+  buttons, tooltips, nav, etc. Keyboard: ←/→ step, Enter main CTA.
+- v7:
+  * Header logo uses Oracle "O" inline SVG.
+  * Intro cards stacked vertically (Why Duality on top, Explore Topics under).
+  * Duality Explorer "Same data, multiple access paths" now MATCHES the
+    generated mapping (root/table, PK, sample id/status).
+  * Migrator removed; Dev & CTO value placed in Recap; LiveLab link included.
+===============================================================================
+*/
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root{
+  --brand-yellow:#F1B13F;
+  --slate-100:#697778;
+  --page-bg:#F5F3F0;
+  --white:#FFFFFF;
+  --text-primary:#161513;
+  --text-secondary:#6B6966;
+  --border-color:#D3D3D1;
+  --shadow-light:rgba(0,0,0,0.08);
+  --shadow-hover:rgba(0,0,0,0.12);
+  --focus-color:#C74634;
+  --oracle-red:#C74634;
+  --button-hover:#B13426;
+  --code-bg:#1E1E1E;
+  --success:#4CAF50;
+  --warn:#B67900;
+  --info:#2196F3;
+}
+body{
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: var(--page-bg);
+  color: var(--text-primary);
+  min-height:100vh;
+  display:flex; flex-direction:column; line-height:1.5;
+}
+
+/* Header */
+.header{
+  background:var(--white); height:56px; padding:0 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--border-color);
+  position:sticky; top:0; z-index:100;
+}
+.logo{ display:flex; align-items:center; gap:12px; }
+.logo h1{ font-size:1.1rem; font-weight:500; }
+.logo-svg{
+  width:80px; height:32px; display:flex; align-items:center; justify-content:center;
+  color: var(--oracle-red);
+}
+.logo-svg svg{ display:block; }
+
+/* Stepper */
+.progress-container{ background:var(--white); padding:24px; border-bottom:1px solid var(--border-color); }
+.progress-steps{ display:flex; justify-content:space-between; gap:24px; max-width:1200px; margin:0 auto; }
+.step{ text-align:center; cursor:pointer; }
+.step-circle{
+  width:32px; height:32px; border-radius:50%;
+  background:var(--white); border:2px solid var(--text-secondary);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-weight:600; font-size:.875rem; margin-bottom:8px;
+}
+.step-title{ font-size:.875rem; color:var(--text-secondary); }
+.step.active .step-title{ color:var(--text-primary); font-weight:600; }
+.step.active .step-circle,
+.step.completed .step-circle{ background:var(--brand-yellow); border-color:var(--brand-yellow); color:var(--text-primary); }
+
+/* Layout */
+.main-content{ flex:1; padding:32px 24px; max-width:1200px; width:100%; margin:0 auto; }
+.demo-section{ background:var(--white); border:1px solid var(--border-color); border-radius:8px; padding:24px; box-shadow:0 2px 4px var(--shadow-light); display:none; }
+.demo-section.active{ display:block; }
+.section-header{ margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border-color); }
+.section-header h2{ font-weight:300; font-size:1.75rem; margin-bottom:8px; }
+.section-header p{ color:var(--text-secondary); }
+
+/* Common UI */
+.grid{ display:grid; gap:24px; }
+.grid-2{ grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); }
+.grid-3{ grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+.card{
+  background:var(--white); border:1px solid var(--border-color); border-radius:8px;
+  padding:24px; box-shadow:0 2px 4px var(--shadow-light); transition:transform .2s, box-shadow .2s;
+}
+.card:hover{ transform:translateY(-2px); box-shadow:0 4px 8px var(--shadow-hover); }
+.muted{ color:var(--text-secondary); }
+
+/* Buttons */
+.btn{
+  min-height:44px; padding:12px 20px; border-radius:4px; border:1px solid transparent; cursor:pointer;
+  font-weight:600; font-size:1rem; display:inline-flex; align-items:center; justify-content:center;
+  background:var(--slate-100); color:var(--white);
+}
+.btn:hover{ background:#5a6869; }
+.btn:focus-visible{ outline:2px solid var(--focus-color); outline-offset:2px; }
+.btn-primary{ background:var(--brand-yellow); color:var(--text-primary); border-color:var(--brand-yellow); }
+.btn-primary:hover{ background:#d99d2f; }
+.btn-secondary{ background:var(--white); color:var(--text-primary); border-color:var(--border-color); }
+.btn-secondary:hover{ background:var(--page-bg); }
+.btn-ghost{ background:transparent; color:var(--text-primary); border-color:var(--border-color); }
+
+/* Inputs */
+.input, textarea{
+  width:100%; padding:12px; border:1px solid var(--border-color); border-radius:4px; background:var(--white); font-size:1rem; min-height:44px;
+}
+textarea{ min-height:220px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:.92rem; line-height:1.4; }
+.input:focus, textarea:focus{ outline:none; border-color:var(--focus-color); }
+.input:focus-visible, textarea:focus-visible{ outline:2px solid var(--focus-color); outline-offset:-2px; }
+.input-group{ display:flex; gap:12px; flex-wrap:wrap; }
+
+/* Code */
+.code-container{
+  background:var(--code-bg); color:#d4d4d4; padding:16px; border-radius:4px; font-family:"Courier New", monospace;
+  font-size:.9rem; overflow:auto;
+}
+.code-toolbar{ display:flex; gap:8px; justify-content:flex-end; margin-bottom:8px; }
+.k{ color:#569cd6; } .s{ color:#ce9178; } .c{ color:#6a9955; } .n{ color:#dcdcaa; }
+
+/* Chips */
+.chips{ display:flex; gap:8px; flex-wrap:wrap; }
+.chip{
+  padding:6px 10px; border-radius:999px; border:1px solid var(--border-color); background:var(--white);
+  font-size:.825rem; color:var(--text-secondary);
+}
+.chip.active{ background:var(--brand-yellow); color:var(--text-primary); border-color:var(--brand-yellow); }
+
+/* Tooltip */
+.tooltip{ position:relative; border-bottom:1px dotted var(--text-secondary); cursor:help; }
+.tooltip .tooltiptext{
+  position:absolute; visibility:hidden; opacity:0; transition:opacity .2s;
+  width:260px; bottom:125%; left:50%; transform:translateX(-50%);
+  background:var(--page-bg); color:var(--text-primary); padding:12px; border:1px solid var(--border-color); border-radius:4px; box-shadow:0 2px 4px var(--shadow-light); z-index:10;
+  font-size:.875rem;
+}
+.tooltip:hover .tooltiptext{ visibility:visible; opacity:1; }
+
+/* Callouts & metrics */
+.callout{
+  border-left:4px solid var(--brand-yellow); padding:16px; border:1px solid var(--border-color); border-radius:6px; background:var(--white);
+}
+.metric{
+  background:var(--white); border:1px solid var(--border-color); border-left:4px solid var(--brand-yellow); border-radius:8px; padding:16px; text-align:center;
+}
+.metric .value{ font-size:1.6rem; font-weight:300; }
+.metric .label{ font-size:.875rem; color:var(--text-secondary); }
+
+/* Results grid (schema) */
+.results-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:16px; margin-top:12px; }
+.result-card{
+  border:1px solid var(--border-color); border-radius:8px; padding:12px; background:var(--white); transition:transform .2s, box-shadow .2s;
+}
+.result-card:hover{ transform:translateY(-2px); box-shadow:0 4px 8px var(--shadow-hover); }
+
+/* Status */
+.status{ display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:6px 10px; font-size:.82rem; border:1px solid; }
+.status.ok{ border-color:var(--success); color:var(--success); }
+.status.warn{ border-color:var(--warn); color:var(--warn); }
+
+/* Nav buttons */
+.nav-buttons{ display:flex; justify-content:space-between; margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); }
+
+/* INTRO layout: stack vertically (Why Duality View on top, Explore Topics under) */
+.intro-layout{
+  display:grid;
+  grid-template-columns: 1fr;   /* stacked on all viewports */
+  gap:16px;                      /* compact spacing */
+}
+.topic-buttons{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.topic-panel{ position:relative; min-height:auto; }
+.topic-panel .placeholder{
+  position:relative; inset:auto;
+  display:flex; align-items:center; justify-content:center;
+  padding:16px; color:var(--text-secondary);
+  background:linear-gradient(180deg, rgba(245,243,240,.3), rgba(245,243,240,0));
+  border:1px dashed var(--border-color); border-radius:8px;
+}
+.topic-panel .inner{ position:relative; }
+
+/* Accessibility helpers */
+*:focus-visible{ outline:2px solid var(--focus-color); outline-offset:2px; }
+.sr-only{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+/* Responsive */
+@media (max-width: 768px){
+  .grid-2,.grid-3{ grid-template-columns:1fr; }
+  .progress-steps{ overflow-x:auto; padding-bottom:8px; }
+}
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" aria-label="Top">
+    <div class="logo">
+      <div class="logo-svg" aria-hidden="true">
+        <!-- Oracle red "O" icon (inline SVG) -->
+        <svg viewBox="0 0 600 600" role="img" aria-label="Oracle logo" preserveAspectRatio="xMidYMid meet">
+          <rect x="70" y="200" width="460" height="200" rx="100" fill="none" stroke="currentColor" stroke-width="100" />
+        </svg>
+      </div>
+      <h1>Oracle Database 23ai — JSON Relational Duality</h1>
+    </div>
+    <button class="btn btn-secondary" id="resetBtn" title="Reset demo">Reset Demo</button>
+  </header>
+
+  <!-- Stepper -->
+  <div class="progress-container" aria-label="Progress">
+    <div class="progress-steps" id="stepper"></div>
+  </div>
+
+  <main class="main-content">
+    <!-- SECTION 0: Introduction -->
+    <section class="demo-section active" id="section-0" aria-labelledby="intro-h2">
+      <div class="section-header">
+        <h2 id="intro-h2">JSON for the Enterprise — What & Why</h2>
+        <p>Think in JSON without giving up relational power. Unify models, eliminate duplication, and simplify apps.</p>
+      </div>
+
+      <div class="intro-layout">
+        <!-- TOP: Why Duality View -->
+        <div class="card" id="why-card">
+          <h3>Why Duality View</h3>
+          <p class="muted">
+            Pure document stores often duplicate data across documents, leading to inconsistencies and brittle code. JSON Relational Duality separates
+            <em>storage</em> from <em>access</em> so you work with business objects as JSON while Oracle stores them in normalized tables—no duplication, strong consistency, and full SQL analytics.
+          </p>
+          <ul class="muted" style="margin-top:8px; padding-left:18px;">
+            <li>Unify JSON and relational without trade-offs</li>
+            <li>Mapping handled by the database kernel (ORMs become unnecessary)</li>
+            <li>Use JSON APIs, REST, MongoDB-compatible API, and SQL interchangeably</li>
+          </ul>
+          <div class="grid grid-3" style="margin-top:12px;">
+            <div class="metric"><div class="value">Zero</div><div class="label">duplication by design</div></div>
+            <div class="metric"><div class="value">Lock-free</div><div class="label">optimistic concurrency</div></div>
+            <div class="metric"><div class="value">Works</div><div class="label">on-prem & multicloud</div></div>
+          </div>
+          <small class="muted" style="display:block;margin-top:8px;">Available across Oracle Database 23ai editions; no extra license.</small>
+        </div>
+
+        <!-- BOTTOM: Topics -->
+        <div class="card">
+          <h3>Explore Topics</h3>
+          <p class="muted">Click a topic to view details. Selecting another replaces the content below.</p>
+          <div class="topic-buttons" id="topicButtons" role="tablist" aria-label="Intro topics">
+            <button class="chip active" role="tab" aria-selected="true" data-topic="security">Security & Integration</button>
+            <button class="chip" role="tab" aria-selected="false" data-topic="runs">Where It Runs</button>
+          </div>
+
+          <div class="topic-panel" id="topicPanel" aria-live="polite">
+            <div class="placeholder">Select a topic above to view details.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <div></div>
+        <button class="btn btn-primary" data-next>Explore JSON Duality →</button>
+      </div>
+    </section>
+
+    <!-- SECTION 1: Core Concept -->
+    <section class="demo-section" id="section-1" aria-labelledby="concept-h2">
+      <div class="section-header">
+        <h2 id="concept-h2">JSON Relational Duality — Core Concept</h2>
+        <p>Treat data interchangeably as JSON documents or relational tables; choose the best interface per use case.</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>How it works</h3>
+          <p class="muted">
+            Duality Views expose updatable JSON business objects while Oracle stores the data in normalized tables behind the scenes. Access the same data via REST, MongoDB-compatible APIs, drivers, and SQL—without duplicating or denormalizing.
+          </p>
+          <div class="chips" id="accessChips" role="tablist" aria-label="Access methods">
+            <button class="chip active" role="tab" aria-selected="true" data-code="json">JSON API</button>
+            <button class="chip" role="tab" aria-selected="false" data-code="rest">REST</button>
+            <button class="chip" role="tab" aria-selected="false" data-code="mongo">MongoDB-compatible</button>
+            <button class="chip" role="tab" aria-selected="false" data-code="sql">SQL</button>
+          </div>
+
+          <div class="code-container" id="conceptCode" aria-live="polite" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="card">
+          <h3>Benefits at a glance</h3>
+          <ul class="muted" style="padding-left:18px;">
+            <li>Use JSON when thinking in objects; switch to SQL for analytics</li>
+            <li>Mapping lives in the kernel—ORM pain fades away</li>
+            <li>Seamless integration with modern apps and web APIs</li>
+            <li>Field-level security and governance</li>
+          </ul>
+          <div class="callout" style="margin-top:12px;">
+            “The simplicity of JSON with the power of relational.”
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" data-prev>← Back</button>
+        <button class="btn btn-primary" data-next>Open Duality View Explorer →</button>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Interactive Duality View Explorer -->
+    <section class="demo-section" id="section-2" aria-labelledby="explorer-h2">
+      <div class="section-header">
+        <h2 id="explorer-h2">Duality View Explorer (Simulated)</h2>
+        <p>Paste a JSON business object and generate a plausible normalized schema + indexes.</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <label for="jsonInput" style="font-weight:600; display:block; margin-bottom:8px;">Sample JSON</label>
+          <textarea id="jsonInput" aria-label="JSON input">{
+  "orderId": "O-10045",
+  "customer": { "id": "C-7", "name": "A. Rivera", "email": "ari@example.com" },
+  "items": [
+    { "sku": "SKU-1", "name": "Red Mug", "qty": 2, "price": 12.99 },
+    { "sku": "SKU-9", "name": "Tea Sampler", "qty": 1, "price": 24.50 }
+  ],
+  "shipping": { "address": "100 Ocean Ave", "city": "Pacifica", "state": "CA", "zip": "94044" },
+  "status": "PROCESSING",
+  "lastUpdated": "2025-09-01T12:22:18Z"
+}</textarea>
+          <div class="input-group" style="margin-top:12px;">
+            <button class="btn btn-primary" id="btnGenerate">Generate Duality Mapping</button>
+            <button class="btn btn-ghost" id="btnPrebaked">Load another sample</button>
+          </div>
+          <small class="muted">Tip: Press <kbd>Enter</kbd> to trigger mapping.</small>
+        </div>
+
+        <div class="card">
+          <h3>Normalized Schema (Simulated)</h3>
+          <div id="schemaOut" class="code-container" style="min-height:220px;"></div>
+          <div class="results-grid" id="indexOut"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Same data, multiple access paths</h3>
+        <div class="chips" id="pathsChips" role="tablist" aria-label="Equivalent access paths">
+          <button class="chip active" role="tab" aria-selected="true" data-code="json">JSON API</button>
+          <button class="chip" role="tab" aria-selected="false" data-code="rest">REST</button>
+          <button class="chip" role="tab" aria-selected="false" data-code="mongo">MongoDB-compatible</button>
+          <button class="chip" role="tab" aria-selected="false" data-code="sql">SQL</button>
+        </div>
+        <div class="code-toolbar">
+          <button class="btn btn-secondary" id="copyExplorer">Copy</button>
+        </div>
+        <div class="code-container" id="pathsCode"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" data-prev>← Back</button>
+        <button class="btn btn-primary" data-next>Simulate ETAG Concurrency →</button>
+      </div>
+    </section>
+
+    <!-- SECTION 3: ETAG Lock-free Concurrency -->
+    <section class="demo-section" id="section-3" aria-labelledby="etag-h2">
+      <div class="section-header">
+        <h2 id="etag-h2">Optimistic Concurrency with ETAGs (Simulated)</h2>
+        <p>GET returns JSON + ETag. PUT with <code>If-Match</code> succeeds only if the tag matches—no locks needed. Works for REST, SQL, and MongoDB-compatible APIs.</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Client A — GET</h3>
+          <div class="code-toolbar">
+            <button class="btn btn-secondary" id="btnGet">GET</button>
+            <button class="btn btn-secondary" id="btnServerUpdate">Simulate server update</button>
+          </div>
+          <div class="code-container" id="etagGet"></div>
+        </div>
+
+        <div class="card">
+          <h3>Client A — PUT (If-Match)</h3>
+          <div class="input-group">
+            <input class="input" id="etagInput" placeholder="If-Match ETag" aria-label="If-Match header">
+            <button class="btn btn-primary" id="btnPut">PUT</button>
+          </div>
+          <div id="etagStatus" style="margin-top:8px;"></div>
+          <div class="code-container" id="etagPut"></div>
+          <small class="muted">If your ETag is stale, you’ll see a conflict. Re-GET to retry.</small>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" data-prev>← Back</button>
+        <button class="btn btn-primary" data-next>Code Examples →</button>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Code Examples -->
+    <section class="demo-section" id="section-4" aria-labelledby="code-h2">
+      <div class="section-header">
+        <h2 id="code-h2">Code Examples (Simulated, Copyable)</h2>
+        <p>Create Duality Views; read/write JSON; REST ETAG; MongoDB-compatible snippets.</p>
+      </div>
+
+      <div class="chips" id="codeTabs" role="tablist" aria-label="Code tabs">
+        <button class="chip active" role="tab" aria-selected="true" data-code="sql">SQL</button>
+        <button class="chip" role="tab" aria-selected="false" data-code="rest">REST (cURL)</button>
+        <button class="chip" role="tab" aria-selected="false" data-code="mongo">MongoDB-compatible</button>
+      </div>
+
+      <div class="code-toolbar">
+        <button class="btn btn-secondary" id="copyCode">Copy</button>
+      </div>
+      <div class="code-container" id="codeOut"></div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" data-prev>← Back</button>
+        <button class="btn btn-primary" data-next>Benefits Recap →</button>
+      </div>
+    </section>
+
+    <!-- SECTION 5: Use Cases & Benefits Recap -->
+    <section class="demo-section" id="section-5" aria-labelledby="recap-h2">
+      <div class="section-header">
+        <h2 id="recap-h2">Use Cases & Benefits Recap</h2>
+        <p>Optimal access, less dev time, easier integration, unified ops → faster time-to-market.</p>
+      </div>
+
+      <div class="results-grid">
+        <div class="result-card">
+          <h4>Optimal data access</h4>
+          <p class="muted">Pick JSON, REST, Mongo-API, or SQL per task.</p>
+        </div>
+        <div class="result-card">
+          <h4>Reduced development time</h4>
+          <p class="muted">Natural JSON modeling; no ORM layers to nurse.</p>
+        </div>
+        <div class="result-card">
+          <h4>Ease of integration</h4>
+          <p class="muted">First-class JSON/REST with relational power intact.</p>
+        </div>
+        <div class="result-card">
+          <h4>Unified management → cost savings</h4>
+          <p class="muted">Converged DB, one security+backup posture.</p>
+        </div>
+      </div>
+
+      <!-- Dev & CTO Value block -->
+      <div class="card" style="margin-top:16px;">
+        <h3>Developer & CTO Value</h3>
+        <div class="grid grid-2" style="margin-top:8px;">
+          <div class="card">
+            <h4>For Developers</h4>
+            <ul class="muted" style="padding-left:18px;">
+              <li>Model in JSON; Oracle handles relational persistence</li>
+              <li>Kernel-level mapping → no language-bound ORM</li>
+              <li>Lower latency by avoiding ORM roundtrips</li>
+              <li>Use JSON/REST/Mongo-API/SQL as needed</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>For CTOs</h4>
+            <ul class="muted" style="padding-left:18px;">
+              <li>Zero duplication → consistency and simpler governance</li>
+              <li>Unified data mgmt → cost savings</li>
+              <li>High concurrency with optimistic control (ETAG)</li>
+              <li>Faster delivery and future-proof architecture</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px; text-align:center;">
+        <svg viewBox="0 0 64 64" class="success-icon" style="width:56px;height:56px;margin:0 auto 8px; color:var(--success);">
+          <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="2"></circle>
+          <path d="M20 32l8 8 16-16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <h3>Demo Complete</h3>
+        <p class="muted">You’ve explored JSON Relational Duality end-to-end.</p>
+        <div style="margin-top:12px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="restartBtn">Restart Demo</button>
+          <a class="btn btn-primary" href="https://apexapps.oracle.com/pls/apex/f?p=133:180:16090110673701::::wid:3635" target="_blank" rel="noopener">LiveLab: Build with JSON Duality</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+/* ----------------------------------------------------------------------------
+   Minimal state & constants
+-----------------------------------------------------------------------------*/
+let currentStep = 0;
+
+/* Steps (Migrator removed) */
+const steps = [
+  "Introduction",
+  "Core Concept",
+  "Duality Explorer",
+  "ETAG Concurrency",
+  "Code Examples",
+  "Recap"
+];
+
+const stepIds = steps.map((_, i) => `section-${i}`);
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+/* ----------------------------------------------------------------------------
+   Stepper rendering & navigation
+-----------------------------------------------------------------------------*/
+function renderStepper(){
+  const container = $("#stepper");
+  container.innerHTML = steps.map((title, i) => `
+    <div class="step ${i===0?'active':''}" data-step="${i}" tabindex="0" aria-label="Step ${i+1}: ${title}">
+      <div class="step-circle">${i+1}</div>
+      <div class="step-title">${title}</div>
+    </div>
+  `).join("");
+  container.addEventListener("click", (e)=>{
+    const step = e.target.closest(".step");
+    if(step){ goToStep(parseInt(step.dataset.step,10)); }
+  });
+  container.addEventListener("keydown", (e)=>{
+    if((e.key === "Enter" || e.key === " ") && e.target.classList.contains("step")){
+      goToStep(parseInt(e.target.dataset.step,10));
+    }
+  });
+}
+
+function updateUI(){
+  stepIds.forEach((id, idx)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.toggle("active", idx === currentStep);
+  });
+  $$(".step", $("#stepper")).forEach((s, idx)=>{
+    s.classList.remove("active","completed");
+    if(idx < currentStep) s.classList.add("completed");
+    if(idx === currentStep) s.classList.add("active");
+  });
+}
+
+function goToStep(n){
+  currentStep = Math.max(0, Math.min(n, steps.length-1));
+  updateUI();
+  setTimeout(()=>{
+    const active = $(`#${stepIds[currentStep]}`);
+    const f = active && active.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+    if(f) f.focus({preventScroll:true});
+  }, 50);
+}
+function nextStep(){ goToStep(currentStep+1); }
+function prevStep(){ goToStep(currentStep-1); }
+
+/* Keyboard navigation */
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "ArrowRight") nextStep();
+  else if(e.key === "ArrowLeft") prevStep();
+  else if(e.key >= "1" && e.key <= "9"){
+    const jump = parseInt(e.key,10)-1;
+    if(jump < steps.length) goToStep(jump);
+  }else if(e.key === "Enter"){
+    const active = $(`#${stepIds[currentStep]}`);
+    const primary = active && active.querySelector("[data-next], #btnGenerate, #btnGet, #btnPut");
+    if(primary) primary.click();
+  }
+});
+
+/* Reset / Restart */
+$("#resetBtn")?.addEventListener("click", ()=>goToStep(0));
+document.addEventListener("click", (e)=>{
+  if(e.target && e.target.matches("#restartBtn")) goToStep(0);
+});
+/* Prev/Next buttons */
+document.addEventListener("click", (e)=>{
+  if(e.target && e.target.matches("[data-next]")) nextStep();
+  if(e.target && e.target.matches("[data-prev]")) prevStep();
+});
+
+/* ----------------------------------------------------------------------------
+   INTRO: Topic swapping (single dynamic panel)
+-----------------------------------------------------------------------------*/
+const topicTemplates = {
+  security: `
+    <div class="inner">
+      <h3>Security, Governance, and Integration</h3>
+      <p class="muted">Apply enterprise controls to JSON objects and fields. Integrate with modern apps and web services easily.</p>
+      <div class="grid grid-3" style="margin-top:8px;">
+        <div class="card">
+          <h4>Fine-grained security</h4>
+          <ul class="muted" style="padding-left:18px;">
+            <li>Field-level visibility & manipulation rules</li>
+            <li>Consistent policies across JSON & relational</li>
+            <li>Audit-friendly by design</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Seamless integration</h4>
+          <ul class="muted" style="padding-left:18px;">
+            <li>JSON APIs & REST out-of-the-box</li>
+            <li>MongoDB-compatible API for document ops</li>
+            <li>SQL for analytics & joins when needed</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Unified platform</h4>
+          <ul class="muted" style="padding-left:18px;">
+            <li>Converged with vectors, graph, spatial</li>
+            <li>One security/backup/recovery posture</li>
+            <li>Fewer moving parts → lower cost</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:12px;">
+        <strong>Enterprise-grade security for JSON data, just like all other data.</strong>
+      </div>
+    </div>
+  `,
+  runs: `
+    <div class="inner">
+      <h3>Where It Runs (Works Everywhere)</h3>
+      <p class="muted">On-prem, OCI, and multicloud—including Always Free and downloadable images. No extra license for Duality.</p>
+      <div class="results-grid">
+        <div class="result-card"><h4>On-prem</h4><p class="muted">Exadata • ODA</p></div>
+        <div class="result-card"><h4>OCI services</h4><p class="muted">Autonomous DB • Exadata DB Service • Base DB Service</p></div>
+        <div class="result-card"><h4>Multicloud</h4><p class="muted">Oracle Database@Azure • @Google Cloud • @AWS</p></div>
+        <div class="result-card"><h4>Free & Images</h4><p class="muted">Always Free ADB • ADB 23ai Container Image • Oracle Database 23ai Free</p></div>
+      </div>
+    </div>
+  `
+};
+
+function bindIntroTopics(){
+  const panel = $("#topicPanel");
+  const buttonsWrap = $("#topicButtons");
+  panel.innerHTML = topicTemplates.security; // default view
+
+  buttonsWrap.addEventListener("click", (e)=>{
+    const chip = e.target.closest(".chip");
+    if(!chip) return;
+    $$(".chip", buttonsWrap).forEach(c=>{ c.classList.remove("active"); c.setAttribute("aria-selected","false"); });
+    chip.classList.add("active");
+    chip.setAttribute("aria-selected","true");
+    const key = chip.dataset.topic;
+    panel.innerHTML = topicTemplates[key] || `<div class="placeholder">No content.</div>`;
+  });
+}
+
+/* ----------------------------------------------------------------------------
+   SECTION 1: Core Concept — dynamic code view
+-----------------------------------------------------------------------------*/
+const conceptSnippets = {
+  json:
+`// JSON API view of a business object (Order)
+{
+  "orderId": "O-10045",
+  "customer": { "id": "C-7", "name": "A. Rivera" },
+  "items": [ { "sku":"SKU-1", "qty":2 }, { "sku":"SKU-9", "qty":1 } ],
+  "status": "PROCESSING"
+}`,
+  rest:
+`# REST: GET the order as JSON with an ETag
+curl -i \\
+  -H "Accept: application/json" \\
+  https://example/api/orders/O-10045
+
+# REST: Update only if ETag matches (optimistic control)
+curl -X PUT \\
+  -H "Content-Type: application/json" \\
+  -H "If-Match: \\"W/\\"e8d-abc\\""\\" \\
+  -d '{"status":"SHIPPED"}' \\
+  https://example/api/orders/O-10045`,
+  mongo:
+`// MongoDB-compatible API
+db.orders.findOne({ orderId: "O-10045" });
+db.orders.updateOne(
+  { orderId: "O-10045" },
+  { $set: { status: "SHIPPED" } }
+);`,
+  sql:
+`-- SQL access to the same object
+SELECT o.order_id, c.name, SUM(i.qty) AS total_items
+FROM orders o
+JOIN customers c ON c.customer_id = o.customer_id
+JOIN order_items i ON i.order_id = o.order_id
+WHERE o.order_id = 'O-10045'
+GROUP BY o.order_id, c.name;`
+};
+
+function bindConceptChips(){
+  const out = $("#conceptCode");
+  out.textContent = conceptSnippets.json;
+  $("#accessChips").addEventListener("click", (e)=>{
+    const chip = e.target.closest(".chip");
+    if(!chip) return;
+    $$(".chip", $("#accessChips")).forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    out.textContent = conceptSnippets[chip.dataset.code] || "";
+  });
+}
+
+/* ----------------------------------------------------------------------------
+   SECTION 2: Duality View Explorer — JSON→schema (simulated)
+-----------------------------------------------------------------------------*/
+const prebakedSamples = [
+`{
+  "orderId": "O-10077",
+  "customer": { "id": "C-19", "name": "M. Chen", "email": "m.chen@example.com" },
+  "items": [ { "sku": "S-5", "qty": 1, "price": 399.0 } ],
+  "status": "PENDING"
+}`,
+`{
+  "productId": "P-2001",
+  "name": "4K Monitor",
+  "variants": [ {"id":"V1","color":"black"}, {"id":"V2","color":"white"} ],
+  "tags": ["display","office"],
+  "price": 329.00,
+  "status": "ACTIVE"
+}`
+];
+
+function pickIdKey(obj){
+  if ('orderId' in obj) return 'orderId';
+  if ('productId' in obj) return 'productId';
+  if ('id' in obj) return 'id';
+  // look for somethingId
+  const idKey = Object.keys(obj).find(k=>/id$/i.test(k));
+  return idKey || 'id';
+}
+
+function plausibleSchemaFromJson(obj){
+  const tables = [];
+  const indexes = [];
+  const idKey = pickIdKey(obj);
+  const rootName = (obj.orderId && "orders") || (obj.productId && "products") || "entities";
+  const pk = (obj.orderId && "order_id") || (obj.productId && "product_id") || "id";
+
+  tables.push({
+    name: rootName,
+    columns: Object.entries(obj).filter(([k,v]) => !Array.isArray(v) && typeof v !== "object")
+      .map(([k,v]) => `${(k===idKey?pk:k).padEnd(16)} ${typeof v === "number" ? "NUMBER" : "VARCHAR2(4000)"}` )
+      .concat([`${pk.padEnd(16)} VARCHAR2(128) PRIMARY KEY`])
+      .filter((v,i,a)=>a.indexOf(v)===i)
+  });
+
+  Object.entries(obj).forEach(([k,v])=>{
+    if(Array.isArray(v)){
+      const childTable = `${rootName}_${k}`;
+      tables.push({
+        name: childTable,
+        columns: [
+          `${rootName.slice(0,-1)}_${pk.padEnd(11)} VARCHAR2(128) REFERENCES ${rootName}(${pk})`,
+          ...Object.keys(v[0]||{}).map(ck => `${ck.padEnd(16)} VARCHAR2(4000)`)
+        ]
+      });
+      indexes.push({table:childTable, cols:[`${rootName.slice(0,-1)}_${pk}`, (v[0] && Object.keys(v[0])[0]) || "col1"]});
+    }else if(typeof v === "object" && v){
+      const childTable = `${rootName}_${k}`;
+      tables.push({
+        name: childTable,
+        columns: [
+          `${pk.padEnd(16)} VARCHAR2(128) PRIMARY KEY`,
+          ...Object.keys(v).map(ck => `${ck.padEnd(16)} VARCHAR2(4000)`)
+        ]
+      });
+      indexes.push({table:childTable, cols:[pk]});
+    }
+  });
+
+  return {
+    tables, indexes, rootName, pk,
+    idKey, idVal: obj[idKey] || '...',
+
+    exampleUpdateField: ('status' in obj) ? 'status' :
+                        ('name' in obj)   ? 'name'   :
+                        Object.keys(obj).find(k => typeof obj[k] !== 'object') || 'status',
+    exampleUpdateValue: ('status' in obj) ? 'SHIPPED' :
+                        ('name' in obj)   ? 'Updated Name' : 'UPDATED'
+  };
+}
+
+/* Build access snippets that reflect actual mapping */
+function explorerAccessSnippet(schema){
+  const {rootName, pk, idKey, idVal, exampleUpdateField, exampleUpdateValue} = schema;
+  const plural = rootName; // already pluralized above for orders/products/entities
+  const idDocKey = idKey;  // e.g., orderId/productId/id
+
+  return {
+    json:
+`// JSON API (simulated) — collection: ${plural}
+GET /api/${plural}/${idVal}
+
+PUT /api/${plural}/${idVal}
+{
+  "${exampleUpdateField}": "${exampleUpdateValue}"
+}
+
+// Document identity field in JSON:
+{ "${idDocKey}": "${idVal}", ... }`,
+    rest:
+`# REST (simulated) — same business object
+curl -i https://example/api/${plural}/${idVal}
+
+# Conditional update with an ETag
+curl -X PUT \\
+  -H "Content-Type: application/json" \\
+  -H "If-Match: W/\\"abc123\\"" \\
+  -d '{ "${exampleUpdateField}": "${exampleUpdateValue}" }' \\
+  https://example/api/${plural}/${idVal}`,
+    mongo:
+`// MongoDB-compatible (simulated) — same collection
+db.${plural}.findOne({ ${JSON.stringify(idDocKey)}: "${idVal}" });
+
+db.${plural}.updateOne(
+  { ${JSON.stringify(idDocKey)}: "${idVal}" },
+  { $set: { ${JSON.stringify(exampleUpdateField)}: "${exampleUpdateValue}" } }
+);`,
+    sql:
+`-- SQL through a Duality View mapped to ${plural}
+CREATE OR REPLACE JSON DUALITY VIEW ${plural}_doc
+  SOURCE ${plural}
+  /* mapping elided in demo; pk column: ${pk} */;
+
+-- Read the same object as JSON
+SELECT JSON_OBJECT(*) FROM ${plural}_doc WHERE ${pk} = '${idVal}';
+
+-- Update via the updatable JSON view
+UPDATE ${plural}_doc SET ${exampleUpdateField} = '${exampleUpdateValue}'
+WHERE ${pk} = '${idVal}';`
+  };
+}
+
+function renderSchema(schema){
+  const {tables, indexes} = schema;
+  const ddl = tables.map(t => {
+    const cols = [...new Set(t.columns)];
+    return `CREATE TABLE ${t.name} (\n  ${cols.join(",\n  ")}\n);`;
+  }).join("\n\n");
+  $("#schemaOut").textContent = ddl;
+
+  $("#indexOut").innerHTML = indexes.map(ix => `
+    <div class="result-card">
+      <strong>INDEX on ${ix.table}</strong>
+      <div class="muted">(${ix.cols.join(", ")})</div>
+    </div>
+  `).join("");
+}
+
+function bindExplorer(){
+  const input = $("#jsonInput");
+  const btnGen = $("#btnGenerate");
+  const btnPB = $("#btnPrebaked");
+  const paths = $("#pathsCode");
+  const chips = $("#pathsChips");
+  let currentExplorerSnippets = explorerAccessSnippet(plausibleSchemaFromJson(JSON.parse(input.value)));
+
+  function setPaths(codeKey){
+    paths.textContent = currentExplorerSnippets[codeKey] || "";
+  }
+
+  function doGenerate(){
+    try{
+      const obj = JSON.parse(input.value);
+      const schema = plausibleSchemaFromJson(obj);
+      renderSchema(schema);
+      currentExplorerSnippets = explorerAccessSnippet(schema);
+      // default to JSON tab active
+      $$(".chip", chips).forEach(c=>c.classList.remove("active"));
+      chips.querySelector('[data-code="json"]').classList.add("active");
+      setPaths("json");
+    }catch(e){
+      $("#schemaOut").textContent = `/* Invalid JSON: ${e.message} */`;
+      $("#indexOut").innerHTML = "";
+      paths.textContent = "";
+    }
+  }
+
+  // initial hydrate
+  doGenerate();
+
+  chips.onclick = (e)=>{
+    const chip = e.target.closest(".chip");
+    if(!chip) return;
+    $$(".chip", chips).forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    setPaths(chip.dataset.code);
+  };
+
+  $("#copyExplorer").addEventListener("click", ()=>copyText(paths.textContent));
+  btnGen.addEventListener("click", doGenerate);
+  input.addEventListener("keypress", (e)=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); doGenerate(); } });
+  btnPB.addEventListener("click", ()=>{
+    input.value = prebakedSamples[(Math.random()*prebakedSamples.length)|0];
+    doGenerate();
+  });
+}
+
+/* ----------------------------------------------------------------------------
+   SECTION 3: ETAG simulator
+-----------------------------------------------------------------------------*/
+let serverDoc = { id:"O-10045", status:"PROCESSING", _etag: newEtag() };
+function newEtag(){ return 'W/"' + Math.random().toString(36).slice(2,8) + '"'; }
+
+function renderGet(){
+  $("#etagGet").textContent =
+`HTTP/1.1 200 OK
+Content-Type: application/json
+ETag: ${serverDoc._etag}
+
+{ "id":"${serverDoc.id}", "status":"${serverDoc.status}" }`;
+  $("#etagInput").value = serverDoc._etag;
+}
+
+function bindEtag(){
+  $("#btnGet").addEventListener("click", renderGet);
+  $("#btnServerUpdate").addEventListener("click", ()=>{
+    serverDoc.status = serverDoc.status === "PROCESSING" ? "SHIPPED" : "PROCESSING";
+    serverDoc._etag = newEtag();
+    const msg = document.createElement("div");
+    msg.className = "status ok";
+    msg.textContent = `Server updated doc → new ETag ${serverDoc._etag}`;
+    $("#etagStatus").innerHTML = ""; $("#etagStatus").appendChild(msg);
+  });
+  $("#btnPut").addEventListener("click", ()=>{
+    const provided = $("#etagInput").value.trim();
+    const statusBox = $("#etagStatus");
+    statusBox.innerHTML = "";
+    const result = document.createElement("div");
+
+    if(provided === serverDoc._etag){
+      serverDoc.status = "SHIPPED";
+      serverDoc._etag = newEtag();
+      result.className = "status ok";
+      result.textContent = "200 OK — Updated. New ETag " + serverDoc._etag;
+      $("#etagPut").textContent =
+`PUT /api/orders/${serverDoc.id}
+If-Match: ${provided}
+
+{ "status": "SHIPPED" }  // success`;
+    }else{
+      result.className = "status warn";
+      result.textContent = "412 Precondition Failed — ETag mismatch. Re-GET and retry.";
+      $("#etagPut").textContent =
+`PUT /api/orders/${serverDoc.id}
+If-Match: ${provided || "<missing>"}
+
+{ "status": "SHIPPED" }  // conflict`;
+    }
+    statusBox.appendChild(result);
+  });
+}
+
+/* ----------------------------------------------------------------------------
+   SECTION 4: Code examples (toggle + copy)
+-----------------------------------------------------------------------------*/
+const codeSnippets = {
+  sql:
+`/* Create a Duality View for Orders (demo DDL) */
+CREATE OR REPLACE JSON DUALITY VIEW order_doc
+  SOURCE orders
+  /* mapping elided for brevity in demo */;
+
+-- Read as JSON
+SELECT JSON_OBJECT(*) FROM order_doc WHERE order_id = 'O-10045';
+
+-- Update via JSON (updatable view)
+UPDATE order_doc SET status = 'SHIPPED' WHERE order_id = 'O-10045';
+
+-- Simple analytics over same data
+SELECT c.name, COUNT(*) orders
+FROM orders o JOIN customers c ON c.customer_id = o.customer_id
+GROUP BY c.name
+ORDER BY orders DESC;`,
+  rest:
+`# GET returns an ETag
+curl -i https://example/api/orders/O-10045
+
+# Conditional update (optimistic)
+curl -X PUT \\
+  -H 'Content-Type: application/json' \\
+  -H 'If-Match: W/"e8d-xyz"' \\
+  -d '{"status":"SHIPPED"}' \\
+  https://example/api/orders/O-10045`,
+  mongo:
+`// MongoDB-compatible examples
+db.orders.insertOne({ orderId:"O-10045", status:"PROCESSING" });
+db.orders.updateOne({ orderId:"O-10045" }, { $set: { status:"SHIPPED" } });
+db.orders.aggregate([{ $match: { status:"SHIPPED" } }, { $group: { _id:null, count: { $sum: 1 } } }]);`
+};
+
+function bindCodeTabs(){
+  const out = $("#codeOut");
+  out.textContent = codeSnippets.sql;
+  $("#codeTabs").addEventListener("click", (e)=>{
+    const chip = e.target.closest(".chip");
+    if(!chip) return;
+    $$(".chip", $("#codeTabs")).forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    out.textContent = codeSnippets[chip.dataset.code] || "";
+  });
+  $("#copyCode").addEventListener("click", ()=>copyText(out.textContent));
+}
+
+/* ----------------------------------------------------------------------------
+   Utilities
+-----------------------------------------------------------------------------*/
+function copyText(text){
+  navigator.clipboard?.writeText(text).then(()=>{
+    const btn = document.activeElement;
+    if(btn && btn.classList.contains("btn")){
+      const old = btn.textContent;
+      btn.textContent = "Copied ✓";
+      setTimeout(()=>btn.textContent = old, 1200);
+    }
+  });
+}
+
+/* ----------------------------------------------------------------------------
+   Boot
+-----------------------------------------------------------------------------*/
+renderStepper();
+bindIntroTopics();
+bindConceptChips();
+bindExplorer();
+bindEtag();
+bindCodeTabs();
+updateUI();
+</script>
+</body>
+</html>
