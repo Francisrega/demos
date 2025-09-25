@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Oracle JSON Relational Duality - Live Interactive Demo (v2.0)</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);
+      min-height:100vh; padding:20px; color:#2c3e50;
+    }
+    .container{
+      max-width:1600px; margin:0 auto; background:rgba(255,255,255,.95);
+      border-radius:15px; padding:30px; box-shadow:0 20px 40px rgba(0,0,0,.2);
+    }
+    /* Title with Oracle logo */
+    .title{
+      display:flex; align-items:center; justify-content:center;
+      gap:14px; color:#2c3e50; margin-bottom:30px;
+      text-shadow:2px 2px 4px rgba(0,0,0,.1)
+    }
+    .title img.title-logo{ height:40px; width:auto; }
+    .title h1{ font-size:2.2em; font-weight:800; line-height:1.1; }
+
+    /* Controls bar centered */
+    .controls{
+      display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; justify-content:center;
+    }
+    button{
+      padding:12px 20px; border:none; border-radius:999px; font-weight:700; cursor:pointer; transition:transform .15s, box-shadow .15s;
+    }
+    button:hover{ transform:translateY(-2px); box-shadow:0 5px 14px rgba(0,0,0,.18) }
+    .btn-primary{ background:linear-gradient(45deg,#3498db,#2980b9); color:#fff }
+    .btn-success{ background:linear-gradient(45deg,#27ae60,#229954); color:#fff }
+    .btn-danger{  background:linear-gradient(45deg,#e74c3c,#c0392b); color:#fff }
+    .btn-warning{ background:linear-gradient(45deg,#f39c12,#e67e22); color:#fff }
+    .btn-mini{ padding:6px 10px; font-size:.78rem; border-radius:8px }
+    .logo-icon{ height:20px; width:auto; vertical-align:middle; margin-right:6px; }
+
+    /* Grid (original 3 equal columns) */
+    .main-grid{
+      display:grid; grid-template-columns: repeat(3, 1fr);
+      gap:24px; margin-bottom:24px
+    }
+    @media (max-width: 1200px){ .main-grid{ grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 800px){  .main-grid{ grid-template-columns: 1fr; } }
+
+    .panel{
+      background:#fff; border-radius:15px; padding:22px; box-shadow:0 8px 16px rgba(0,0,0,.1);
+      position:relative; overflow:hidden;
+    }
+    .panel-header{ display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:3px solid #e74c3c; margin-bottom:16px }
+    .panel-icon{ width:40px; height:40px; border-radius:10px; display:grid; place-items:center; color:#fff; font-weight:900 }
+    .json-panel .panel-icon{ background:linear-gradient(135deg,#3498db,#2980b9) }
+    .table-panel .panel-icon{ background:linear-gradient(135deg,#e74c3c,#c0392b) }
+    .api-panel   .panel-icon{ background:linear-gradient(135deg,#27ae60,#229954) }
+    .panel-title{ font-size:1.2rem; font-weight:800 }
+    .feature-badge{ margin-left:auto; background:linear-gradient(45deg,#8e44ad,#9b59b6); color:#fff; padding:4px 10px; border-radius:16px; font-size:.75rem; font-weight:800 }
+
+    .status-indicator{ position:absolute; top:12px; right:12px; width:10px; height:10px; border-radius:50%; background:#2ecc71; box-shadow:0 0 0 0 rgba(46,204,113,.6); animation:pulse 2s infinite }
+    @keyframes pulse{ 70%{ box-shadow:0 0 0 10px rgba(46,204,113,0) } 100%{ box-shadow:0 0 0 0 rgba(46,204,113,0) } }
+
+    /* JSON editor fills the panel’s available white space */
+    .json-editor{
+      display:block; width:100%;
+      background:#1e1e1e; color:#dcdcdc; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+      min-height:420px; padding:14px; border-radius:10px; border:2px solid #2c3e50; outline:none; resize:vertical; line-height:1.45;
+      white-space:pre; overflow:auto; font-size:13px;
+    }
+    .json-editor.active{ border-color:#3498db; box-shadow:0 0 0 3px rgba(52,152,219,.2) }
+
+    table{ width:100%; border-collapse:separate; border-spacing:0; border-radius:10px; overflow:hidden; margin-bottom:14px }
+    th{ background:linear-gradient(135deg,#34495e,#2c3e50); color:#fff; text-align:left; padding:10px; font-size:.85rem }
+    td{ background:#fff; padding:10px; border-bottom:1px solid #ecf0f1; font-size:.92rem }
+    tr:hover td{ background:#f8f9fa }
+
+    .api-selector{ display:flex; gap:10px; margin-bottom:12px }
+    .api-option{ padding:8px 14px; border-radius:999px; background:#ecf0f1; font-weight:700; cursor:pointer; font-size:.85rem }
+    .api-option.active{ background:linear-gradient(45deg,#3498db,#2980b9); color:#fff; transform:scale(1.04) }
+    .code-display{ background:#2c3e50; color:#ecf0f1; border-radius:10px; padding:12px; min-height:160px; font:12px/1.5 ui-monospace,Consolas,monospace; white-space:pre; overflow:auto }
+
+    .operation-log{ background:#34495e; color:#ecf0f1; border-radius:8px; padding:12px; font:11px/1.5 ui-monospace,Consolas,monospace; max-height:210px; overflow:auto; margin-top:12px }
+    .log-entry{ border-bottom:1px solid #2c3e50; padding:4px 2px }
+    .log-entry.insert{  border-left:3px solid #27ae60; padding-left:8px }
+    .log-entry.update{  border-left:3px solid #f39c12; padding-left:8px }
+    .log-entry.delete{  border-left:3px solid #e74c3c; padding-left:8px }
+    .log-entry.query{   border-left:3px solid #3498db; padding-left:8px }
+    .log-entry.conflict{border-left:3px solid #c0392b; padding-left:8px }
+
+    .metrics{ display:grid; grid-template-columns:repeat(6,1fr); gap:16px }
+    .metric{ background:#ecf0f1; border-radius:10px; padding:14px; text-align:center }
+    .metric .v{ font-size:22px; font-weight:900 }
+    .m-total .v{ color:#3498db } .m-ins .v{ color:#27ae60 } .m-upd .v{ color:#f39c12 }
+    .m-del .v{ color:#e74c3c } .m-qry .v{ color:#9b59b6 } .m-con .v{ color:#16a085 }
+
+    .toast{
+      position:fixed; top:20px; left:50%; transform:translateX(-50%);
+      background:#2c3e50; color:#fff; border-left:4px solid #3498db; padding:10px 18px; border-radius:999px;
+      box-shadow:0 8px 18px rgba(0,0,0,.25); z-index:9999; display:none
+    }
+    .toast.show{ display:block }
+    .toast.success{ border-left-color:#27ae60 } .toast.error{ border-left-color:#e74c3c } .toast.warn{ border-left-color:#f39c12 }
+
+    /* animated “data packet” */
+    .packet{ position:fixed; width:20px; height:20px; border-radius:50%; color:#fff; display:grid; place-items:center; font-size:10px; font-weight:800; pointer-events:none; z-index:999 }
+    .packet.json{ background:linear-gradient(135deg,#3498db,#2980b9) }
+    .packet.sql{ background:linear-gradient(135deg,#e74c3c,#c0392b) }
+    .packet.xfm{ background:linear-gradient(135deg,#f39c12,#e67e22) }
+
+    /* highlight pulses for walkthrough */
+    .guide-highlight{
+      outline:4px solid rgba(46, 204, 113, .9);
+      box-shadow:0 0 0 6px rgba(46,204,113,.25);
+      border-radius:14px;
+      animation:gh 1.2s ease-in-out 0s 2;
+    }
+    @keyframes gh{
+      0%{ outline-color:rgba(46,204,113,.2) }
+      50%{ outline-color:rgba(46,204,113,1) }
+      100%{ outline-color:rgba(46,204,113,.2) }
+    }
+
+    /* collapsible details styling */
+    details.guide{ margin-top:16px }
+    details.guide summary{
+      cursor:pointer; list-style:none; padding:8px 12px; border-radius:10px; font-weight:800;
+      background:linear-gradient(45deg,#f39c12,#e67e22); color:#fff; display:inline-flex; align-items:center; gap:8px;
+    }
+    details.guide[open] summary{ border-bottom-left-radius:0; border-bottom-right-radius:0 }
+    .guide-body{
+      background:#fff; border:2px solid #f39c12; border-top:none; padding:12px; border-bottom-left-radius:10px; border-bottom-right-radius:10px;
+    }
+    .steps{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px }
+    .step-btn{ background:#ecf0f1; border-radius:8px; padding:6px 10px; font-weight:700; font-size:.8rem; cursor:pointer }
+    .step-btn:hover{ background:#e1e7ea }
+    .step-title{ font-weight:800; margin-bottom:4px }
+    .step-text{ font-size:.9rem; color:#2c3e50; line-height:1.4 }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Title with Oracle logo -->
+    <div class="title">
+      <img src="theo.png" alt="Oracle" class="title-logo" />
+      <h1>Oracle JSON Relational Duality — Interactive Demo</h1>
+    </div>
+
+    <!-- Centered controls -->
+    <div class="controls">
+      <button class="btn-primary" id="btnInsert">➕ Insert Order</button>
+      <button class="btn-success" id="btnUpdate">✏️ Update Status</button>
+      <button class="btn-warning" id="btnQuery">🔍 Query Data</button>
+      <button class="btn-danger"  id="btnDelete">🗑️ Delete Order</button>
+      <button class="btn-primary" id="btnConflict">⚡ Simulate Conflict</button>
+      <button class="btn-success" id="btnLoad">📊 Load Test</button>
+      <button class="btn-warning" id="btnReset">
+        <img src="theo.png" alt="Oracle" class="logo-icon" /> Reset
+      </button>
+    </div>
+
+    <div class="main-grid">
+      <!-- JSON Document -->
+      <div class="panel json-panel" id="jsonPanel">
+        <div class="panel-header">
+          <div class="panel-icon">{}</div>
+          <div class="panel-title">JSON Document View</div>
+          <span class="feature-badge">Editable</span>
+        </div>
+        <div class="status-indicator"></div>
+
+        <textarea id="jsonEditor" class="json-editor" spellcheck="false">{
+  "orderId": "ORD-2024-001",
+  "customer": { "id": "CUST-789", "name": "Alice Johnson", "email": "alice@example.com", "tier": "GOLD" },
+  "items": [
+    { "productId": "PROD-123", "name": "Wireless Mouse", "quantity": 2, "price": 29.99 },
+    { "productId": "PROD-456", "name": "USB-C Cable", "quantity": 3, "price": 15.99 }
+  ],
+  "status": "PROCESSING",
+  "totalAmount": 107.95,
+  "orderDate": "2025-09-01T10:30:00Z",
+  "etag": "W/\"abc123\""
+}</textarea>
+
+        <div class="operation-log" id="jsonLog"><div class="log-entry">Ready for operations…</div></div>
+      </div>
+
+      <!-- Relational Tables -->
+      <div class="panel table-panel" id="tablesPanel">
+        <div class="panel-header">
+          <div class="panel-icon">⊞</div>
+          <div class="panel-title">Relational Tables</div>
+          <span class="feature-badge">Auto-Sync</span>
+        </div>
+        <div class="status-indicator"></div>
+
+        <h4>Orders</h4>
+        <table id="ordersTable"><thead><tr><th>Order ID</th><th>Customer ID</th><th>Status</th><th>Total</th></tr></thead><tbody></tbody></table>
+
+        <h4>Customers</h4>
+        <table id="customersTable"><thead><tr><th>Customer ID</th><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody></tbody></table>
+
+        <h4>Order Items</h4>
+        <table id="itemsTable"><thead><tr><th>Order ID</th><th>Product ID</th><th>Name</th><th>Qty</th><th>Price</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <!-- API / Code -->
+      <div class="panel api-panel" id="apiPanel">
+        <div class="panel-header">
+          <div class="panel-icon">🔌</div>
+          <div class="panel-title">API Access Methods</div>
+          <span class="feature-badge">Multi-API</span>
+        </div>
+        <div class="status-indicator"></div>
+
+        <div class="api-selector">
+          <div class="api-option active" data-api="json">JSON API</div>
+          <div class="api-option" data-api="sql">SQL</div>
+          <div class="api-option" data-api="mongo">MongoDB</div>
+          <div class="api-option" data-api="rest">REST</div>
+        </div>
+
+        <div id="apiCode" class="code-display">// JSON API example will render here…</div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="btn-primary" id="btnExec" style="flex:1">▶️ Execute Query</button>
+          <button class="btn-warning" id="btnCopy">📋 Copy</button>
+        </div>
+        <div class="operation-log" id="apiLog"><div class="log-entry">Ready to execute queries…</div></div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="panel" id="metricsPanel">
+      <h3 style="margin-bottom:12px;">📊 Live Performance Metrics</h3>
+      <div class="metrics">
+        <div class="metric m-total"><div class="v" id="mTotal">0</div><div>Total Operations</div></div>
+        <div class="metric m-ins"><div class="v" id="mIns">0</div><div>Inserts</div></div>
+        <div class="metric m-upd"><div class="v" id="mUpd">0</div><div>Updates</div></div>
+        <div class="metric m-del"><div class="v" id="mDel">0</div><div>Deletes</div></div>
+        <div class="metric m-qry"><div class="v" id="mQry">0</div><div>Queries</div></div>
+        <div class="metric m-con"><div class="v" id="mCon">0</div><div>Conflicts</div></div>
+      </div>
+
+      <!-- Workflow Guide -->
+      <details class="guide" id="workflowGuide">
+        <summary>❓ How this demo works — step-by-step guide</summary>
+        <div class="guide-body">
+          <p class="step-text" style="margin-bottom:10px;">
+            This walkthrough shows how the <em>same</em> business object can be edited as JSON while the database maintains a normalized relational model and exposes multiple access methods. Click a step to jump/highlight and get instructions. Steps with ▶ run the action for you.
+          </p>
+
+          <div class="steps">
+            <button class="btn-mini step-btn"
+              data-target="#jsonPanel"
+              data-title="1) JSON — Edit the business object"
+              data-desc="Paste or tweak the order JSON here. The editor auto-syncs the relational tables. Try changing status or adding an item. Next: press ▶ Insert to persist the document into the in-memory store.">1. JSON</button>
+
+            <button class="btn-mini step-btn"
+              data-target="#tablesPanel"
+              data-title="2) Tables — See the normalized shape"
+              data-desc="ORDERS, CUSTOMERS, and ITEMS are generated from the JSON. This mirrors how Duality Views map JSON to normalized tables. Next: Update to toggle status/ETag and watch the tables reflect it.">2. Tables</button>
+
+            <button class="btn-mini step-btn"
+              data-target="#apiPanel"
+              data-title="3) APIs — Pick your access path"
+              data-desc="Switch tabs to see JSON API, SQL, MongoDB-compatible, or REST. It’s the same data, different doors. Next: Click Execute to simulate a GET; then try Query to filter.">3. APIs</button>
+
+            <button class="btn-mini step-btn"
+              data-target="#metricsPanel"
+              data-title="4) Metrics — Operations at a glance"
+              data-desc="Counters show inserts, updates, deletes, queries, and optimistic concurrency conflicts. Next: Simulate Conflict to see a 412 path and watch the conflict count increase.">4. Metrics</button>
+
+            <button class="btn-mini step-btn" data-action="insert"
+              data-title="▶ Insert — Write JSON to store"
+              data-desc="Writes the current JSON as a new/updated document and syncs tables. Use this after you edit the JSON to persist the change.">▶ Insert</button>
+
+            <button class="btn-mini step-btn" data-action="update"
+              data-title="▶ Update — Toggle status & rotate ETag"
+              data-desc="Simulates a normal update: flips PROCESSING/SHIPPED and generates a new weak ETag. This demonstrates lock-free, optimistic concurrency.">▶ Update</button>
+
+            <button class="btn-mini step-btn" data-action="query"
+              data-title="▶ Query — Filter & inspect"
+              data-desc="Treat the editor JSON as a simple filter (status/tier). Results are shown by loading the first match back into the editor and updating the tables.">▶ Query</button>
+
+            <button class="btn-mini step-btn" data-action="conflict"
+              data-title="▶ Conflict — If-Match mismatch (412)"
+              data-desc="Simulates a stale client PUT with If-Match against a server-updated ETag. You’ll see a 412 Precondition Failed in the API log and the Conflicts metric bump.">▶ Conflict</button>
+
+            <button class="btn-mini step-btn" data-action="load"
+              data-title="▶ Load Test — Seed sample data"
+              data-desc="Creates a handful of orders with different tiers/totals to explore filtering and metrics.">▶ Load</button>
+
+            <button class="btn-mini step-btn" data-action="reset"
+              data-title="▶ Reset — Back to baseline"
+              data-desc="Restores the seed order and clears logs/metrics so you can run another clean demo path.">▶ Reset</button>
+          </div>
+
+          <div class="step-title" id="guideTitle">Pick a step to begin</div>
+          <p class="step-text" id="guideHint">Start with <strong>1. JSON</strong>: make a small edit (e.g., change <code>status</code> to <code>SHIPPED</code>), then click <strong>▶ Insert</strong> to persist it.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // ------------------------- State -------------------------
+    let store = new Map();        // orderId -> doc
+    let lastFetched = null;       // for ETag flow
+    const metrics = { total:0, inserts:0, updates:0, deletes:0, queries:0, conflicts:0 };
+
+    const apiTemplates = {
+      json: `// JSON API
+GET    /orders/{orderId}
+PUT    /orders/{orderId}    (If-Match: W/"etag")
+POST   /orders              (body: JSON)
+DELETE /orders/{orderId}`,
+      sql: `-- Duality View (conceptual)
+SELECT JSON_OBJECT(*) FROM orders_duality_view WHERE order_id = :id;
+
+UPDATE orders_duality_view
+  SET status = 'SHIPPED'
+WHERE order_id = :id AND etag = 'W/"abc123"';`,
+      mongo: `// MongoDB-compatible
+db.orders.findOne({ orderId: "ORD-2024-001" })
+db.orders.updateOne(
+  { orderId: "ORD-2024-001", etag: 'W/"abc123"' },
+  { $set: { status: "SHIPPED" } }
+)`,
+      rest: `# REST + ETag
+GET /api/orders/ORD-2024-001
+# Response includes ETag
+
+PUT /api/orders/ORD-2024-001
+If-Match: W/"abc123"
+Content-Type: application/json
+{ "status":"SHIPPED" }`
+    };
+
+    // --------------------- Utilities ------------------------
+    const $ = (s,p=document)=>p.querySelector(s);
+    const now = ()=> new Date().toLocaleTimeString();
+    const toast = (msg,type='info')=>{
+      const t = $('#toast'); t.textContent = msg;
+      t.className = 'toast show ' + (type==='success'?'success':type==='error'?'error':type==='warn'?'warn':'');
+      setTimeout(()=> t.classList.remove('show'), 1500);
+    };
+    const log = (id, msg, cls='')=>{
+      const el = $('#'+id);
+      const d = document.createElement('div');
+      d.className = 'log-entry ' + cls;
+      d.textContent = `[${now()}] ${msg}`;
+      el.prepend(d);
+      const limit = 60; while(el.children.length>limit) el.removeChild(el.lastChild);
+    };
+    const bump = (k)=>{
+      metrics[k]++; metrics.total++;
+      $('#mIns').textContent = metrics.inserts;
+      $('#mUpd').textContent = metrics.updates;
+      $('#mDel').textContent = metrics.deletes;
+      $('#mQry').textContent = metrics.queries;
+      $('#mCon').textContent = metrics.conflicts;
+      $('#mTotal').textContent = metrics.total;
+    };
+    const pretty = (o)=> JSON.stringify(o,null,2);
+    const safeParse = (s)=>{ try{ return [JSON.parse(s), null] }catch(e){ return [null, e.message] } };
+
+    function fly(fromEl,toEl,kind='json',glyph){
+      if(!fromEl||!toEl) return;
+      const fr = fromEl.getBoundingClientRect(), tr = toEl.getBoundingClientRect();
+      const p = document.createElement('div');
+      p.className = 'packet ' + (kind==='sql'?'sql':kind==='xfm'?'xfm':'json');
+      p.textContent = glyph || (kind==='sql' ? 'Σ' : '{}');
+      document.body.appendChild(p);
+      p.style.left = (fr.left + fr.width/2) + 'px';
+      p.style.top  = (fr.top  + fr.height/2) + 'px';
+      p.animate([
+        { transform:'translate(0,0)', opacity:.3 },
+        { transform:`translate(${tr.left-fr.left}px, ${tr.top-fr.top}px)`, opacity:1 },
+        { transform:`translate(${tr.left-fr.left}px, ${tr.top-fr.top}px)`, opacity:0 }
+      ],{ duration:900, easing:'ease-in-out' }).onfinish = ()=> p.remove();
+    }
+
+    // ------------------ Tables Renderer ---------------------
+    function renderTables(doc){
+      const oBody = $('#ordersTable tbody'), cBody = $('#customersTable tbody'), iBody = $('#itemsTable tbody');
+      oBody.innerHTML = `<tr><td>${doc.orderId}</td><td>${doc.customer?.id||''}</td><td>${doc.status||''}</td><td>$${(+doc.totalAmount).toFixed(2)}</td></tr>`;
+      cBody.innerHTML = `<tr><td>${doc.customer?.id||''}</td><td>${doc.customer?.name||''}</td><td>${doc.customer?.email||''}</td><td>${doc.customer?.tier||'STANDARD'}</td></tr>`;
+      iBody.innerHTML = (doc.items||[]).map(it=>`
+        <tr><td>${doc.orderId}</td><td>${it.productId||it.sku||''}</td><td>${it.name||''}</td><td>${it.quantity||it.qty||0}</td><td>$${(+it.price||0).toFixed(2)}</td></tr>
+      `).join('');
+    }
+    function syncToTables(){
+      const [doc, err] = safeParse($('#jsonEditor').value);
+      if(err) return;
+      renderTables(doc);
+    }
+
+    // ------------------ Core Actions ------------------------
+    function insertData(){
+      const [doc, err] = safeParse($('#jsonEditor').value);
+      if(err){ toast('Invalid JSON','error'); log('jsonLog','Insert failed: invalid JSON','delete'); return; }
+      if(!doc.orderId){ toast('orderId required','error'); return; }
+      if(store.has(doc.orderId)){
+        store.set(doc.orderId, doc);
+        log('jsonLog',`UPSERT ${doc.orderId}`,'update');
+        bump('updates');
+      }else{
+        store.set(doc.orderId, doc);
+        log('jsonLog',`INSERT ${doc.orderId}`,'insert');
+        bump('inserts');
+      }
+      lastFetched = JSON.parse(JSON.stringify(doc));
+      syncToTables();
+      fly($('#jsonPanel'), $('#tablesPanel'), 'xfm', '↺');
+      toast('Order stored (simulated)','success');
+    }
+
+    function updateData(){
+      const [doc, err] = safeParse($('#jsonEditor').value);
+      if(err || !doc.orderId){ toast('Invalid JSON / missing orderId','error'); return; }
+      const existing = store.get(doc.orderId);
+      if(!existing){ toast('Order not found','error'); return; }
+
+      existing.status = (existing.status==='PROCESSING') ? 'SHIPPED' : 'PROCESSING';
+      existing.etag = 'W/"'+ Math.random().toString(36).slice(2,8) + '"';
+      store.set(doc.orderId, existing);
+
+      $('#jsonEditor').value = pretty(existing);
+      syncToTables();
+
+      bump('updates');
+      log('jsonLog',`UPDATE ${existing.orderId} → status=${existing.status}`,'update');
+      fly($('#tablesPanel'), $('#jsonPanel'), 'json', '{}');
+      toast('Status updated; ETag rotated','success');
+    }
+
+    function deleteData(){
+      const [doc, err] = safeParse($('#jsonEditor').value);
+      if(err || !doc.orderId){ toast('Invalid JSON / missing orderId','error'); return; }
+      if(store.delete(doc.orderId)){
+        bump('deletes'); log('jsonLog',`DELETE ${doc.orderId}`,'delete'); toast('Deleted','success');
+        fly($('#tablesPanel'), $('#apiPanel'), 'sql', '✖');
+      }else{
+        toast('Nothing to delete','warn');
+      }
+      renderTables({ orderId:'—', customer:{}, items:[], status:'—', totalAmount:0 });
+    }
+
+    function queryData(){
+      const [filter] = safeParse($('#jsonEditor').value);
+      const status = filter?.status || '';
+      const tier   = filter?.customer?.tier || '';
+      const results = [];
+      for(const v of store.values()){
+        if(status && v.status!==status) continue;
+        if(tier && (v.customer?.tier)!==tier) continue;
+        results.push(v);
+      }
+      bump('queries');
+      log('jsonLog',`QUERY returned ${results.length} row(s)`,'query');
+      toast(`Query: ${results.length} row(s)`,'success');
+      if(results[0]){ $('#jsonEditor').value = pretty(results[0]); syncToTables(); }
+      fly($('#apiPanel'), $('#tablesPanel'), 'sql', 'Σ');
+    }
+
+    // ------------- ETag / Optimistic Concurrency ------------
+    function simulateConflict(){
+      const [doc, err] = safeParse($('#jsonEditor').value);
+      if(err || !doc.orderId){ toast('Invalid JSON / missing orderId','error'); return; }
+      if(!lastFetched){ lastFetched = JSON.parse(JSON.stringify(doc)); }
+      const server = store.get(doc.orderId) || doc;
+      server.status = 'SHIPPED';
+      server.etag = 'W/"'+ Math.random().toString(36).slice(2,8) + '"';
+      store.set(server.orderId, server);
+
+      const matches = (lastFetched.etag === server.etag);
+      if(!matches){
+        bump('conflicts');
+        log('apiLog',`412 Precondition Failed — If-Match ${lastFetched.etag||'<missing>'} vs current ${server.etag}`,'conflict');
+        toast('ETag conflict — re-GET & retry','error');
+      }else{
+        bump('updates');
+        log('apiLog','204 No Content — PUT succeeded','update');
+        toast('PUT succeeded','success');
+      }
+    }
+
+    // -------------------- Load & Reset ----------------------
+    function runLoadTest(){
+      const n = 12;
+      for(let i=0;i<n;i++){
+        const id = `ORD-LT-${String(i+1).padStart(3,'0')}`;
+        const doc = {
+          orderId:id,
+          customer:{ id:`C-${i}`, name:`User ${i}`, email:`u${i}@ex.com`, tier: ['GOLD','SILVER','BRONZE'][i%3] },
+          items:[{ productId:`SKU-${i}`, name:'Item', quantity:1, price: (i%5)+9.99 }],
+          status: (i%2)?'PROCESSING':'SHIPPED',
+          totalAmount:(i%5)+9.99,
+          orderDate:new Date(Date.now()-i*3600_000).toISOString(),
+          etag:'W/"'+Math.random().toString(36).slice(2,8)+'"'
+        };
+        store.set(id, doc);
+      }
+      metrics.inserts += n; metrics.total += n;
+      $('#mIns').textContent = metrics.inserts; $('#mTotal').textContent = metrics.total;
+      log('jsonLog',`Load test inserted ${n} orders`,'insert');
+      toast(`Load test: ${n} inserts`,'success');
+      fly($('#jsonPanel'), $('#tablesPanel'), 'xfm', '↺');
+    }
+
+    function resetDemo(){
+      store.clear(); Object.assign(metrics,{ total:0,inserts:0,updates:0,deletes:0,queries:0,conflicts:0 });
+      $('#mTotal').textContent = 0; $('#mIns').textContent = 0; $('#mUpd').textContent = 0; $('#mDel').textContent = 0; $('#mQry').textContent = 0; $('#mCon').textContent = 0;
+      const seed = {
+        orderId:"ORD-2024-001",
+        customer:{ id:"CUST-789", name:"Alice Johnson", email:"alice@example.com", tier:"GOLD" },
+        items:[ { productId:"PROD-123", name:"Wireless Mouse", quantity:2, price:29.99 },
+                { productId:"PROD-456", name:"USB-C Cable", quantity:3, price:15.99 } ],
+        status:"PROCESSING",
+        totalAmount:107.95,
+        orderDate:"2025-09-01T10:30:00Z",
+        etag:'W/"abc123"'
+      };
+      store.set(seed.orderId, seed);
+      $('#jsonEditor').value = pretty(seed);
+      $('#jsonLog').innerHTML = '<div class="log-entry">Demo reset. Seed order loaded.</div>';
+      $('#apiLog').innerHTML  = '<div class="log-entry">Ready to execute queries…</div>';
+      syncToTables();
+      toast('Demo reset','success');
+    }
+
+    // -------------------- API Panel -------------------------
+    function wireApiTabs(){
+      document.querySelectorAll('.api-option').forEach(el=>{
+        el.addEventListener('click', function(){
+          document.querySelectorAll('.api-option').forEach(x=>x.classList.remove('active'));
+          this.classList.add('active');
+          $('#apiCode').textContent = apiTemplates[this.dataset.api];
+        });
+      });
+      $('#apiCode').textContent = apiTemplates.json;
+      $('#btnCopy').addEventListener('click', ()=> {
+        navigator.clipboard?.writeText($('#apiCode').textContent);
+        toast('Copied','success');
+      });
+    }
+    function executeAPI(){
+      const [doc, err] = safeParse($('#jsonEditor').value);
+      if(err){ toast('Fix JSON first','error'); return; }
+      log('apiLog',`GET /orders/${doc.orderId} → 200 (ETag ${doc.etag||'W/"etag"'})`,'query');
+      metrics.queries++; metrics.total++;
+      $('#mQry').textContent = metrics.queries; $('#mTotal').textContent = metrics.total;
+      fly($('#apiPanel'), $('#jsonPanel'), 'json', '{}');
+    }
+
+    // -------------------- Walkthrough Guide -----------------
+    function scrollAndHighlight(sel){
+      const el = (typeof sel==='string') ? document.querySelector(sel) : sel;
+      if(!el) return;
+      el.classList.add('guide-highlight');
+      el.scrollIntoView({ behavior:'smooth', block:'center' });
+      setTimeout(()=> el.classList.remove('guide-highlight'), 1600);
+    }
+    function wireGuide(){
+      const title = $('#guideTitle');
+      const hint  = $('#guideHint');
+      document.querySelectorAll('.step-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const t = btn.dataset.title || 'Step';
+          const d = btn.dataset.desc  || '';
+          title.textContent = t;
+          hint.innerHTML = d;
+
+          if(btn.dataset.target) scrollAndHighlight(btn.dataset.target);
+          if(btn.dataset.action){
+            const act = btn.dataset.action;
+            if(act==='insert') insertData();
+            if(act==='update') updateData();
+            if(act==='query')  queryData();
+            if(act==='conflict') simulateConflict();
+            if(act==='load') runLoadTest();
+            if(act==='reset') resetDemo();
+          }
+        });
+      });
+    }
+
+    // -------------------- Events & Boot ---------------------
+    document.addEventListener('DOMContentLoaded', ()=>{
+      resetDemo();
+      $('#jsonEditor').addEventListener('input', function(){
+        this.classList.add('active'); setTimeout(()=>this.classList.remove('active'), 400);
+        syncToTables();
+      });
+
+      // Buttons
+      $('#btnInsert').onclick = insertData;
+      $('#btnUpdate').onclick = updateData;
+      $('#btnDelete').onclick = deleteData;
+      $('#btnQuery' ).onclick = queryData;
+      $('#btnConflict').onclick = simulateConflict;
+      $('#btnLoad').onclick = runLoadTest;
+      $('#btnReset').onclick = resetDemo;
+      $('#btnExec').onclick = executeAPI;
+
+      // API tabs + guide
+      wireApiTabs();
+      wireGuide();
+    });
+  </script>
+</body>
+</html>
