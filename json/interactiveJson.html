@@ -1,695 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oracle JSON Relational Duality - Interactive Demo</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      min-height: 100vh;
-      padding: 20px;
-      color: #2c3e50;
-    }
-    
-    .container {
-      max-width: 1600px;
-      margin: 0 auto;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 15px;
-      padding: 30px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-    
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 30px;
-      font-size: 2.2em;
-    }
-    
-    .controls {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .button-row {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-    }
-    
-    .label {
-      font-weight: bold;
-      margin: 15px 0 10px 0;
-      text-align: center;
-      color: #2c3e50;
-    }
-    
-    button {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 25px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s;
-    }
-    
-    button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-    
-    button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    
-    .btn-special {
-      background: linear-gradient(45deg, #8e44ad, #9b59b6);
-      color: white;
-      font-size: 16px;
-      padding: 15px 30px;
-    }
-    
-    .btn-primary {
-      background: linear-gradient(45deg, #3498db, #2980b9);
-      color: white;
-    }
-    
-    .btn-success {
-      background: linear-gradient(45deg, #27ae60, #229954);
-      color: white;
-    }
-    
-    .btn-warning {
-      background: linear-gradient(45deg, #f39c12, #e67e22);
-      color: white;
-    }
-    
-    .btn-danger {
-      background: linear-gradient(45deg, #e74c3c, #c0392b);
-      color: white;
-    }
-    
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .panel {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-      position: relative;
-    }
-    
-    .panel-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 3px solid #e74c3c;
-    }
-    
-    .panel-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-    
-    .code-display {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      font-family: 'Courier New', monospace;
-      padding: 15px;
-      border-radius: 10px;
-      min-height: 350px;
-      overflow: auto;
-      white-space: pre;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 15px;
-    }
-    
-    th {
-      background: #34495e;
-      color: white;
-      padding: 10px;
-      text-align: left;
-      font-size: 14px;
-    }
-    
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #ecf0f1;
-      font-size: 14px;
-    }
-    
-    tr:hover td {
-      background: #f8f9fa;
-    }
-    
-    .toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2c3e50;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 25px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-      display: none;
-      z-index: 1000;
-    }
-    
-    .toast.show {
-      display: block;
-      animation: slideDown 0.3s ease;
-    }
-    
-    @keyframes slideDown {
-      from { transform: translateX(-50%) translateY(-100%); }
-      to { transform: translateX(-50%) translateY(0); }
-    }
-    
-    .sql-keyword { color: #569cd6; font-weight: bold; }
-    .sql-string { color: #ce9178; }
-    .sql-number { color: #b5cea8; }
-    
-    .inactive {
-      opacity: 0.3;
-      pointer-events: none;
-    }
-    
-    .duality-badge {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(45deg, #8e44ad, #9b59b6);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: 1.2rem;
-      display: none;
-      z-index: 10;
-    }
-    
-    .duality-badge.show {
-      display: block;
-    }
-    
-    @media (max-width: 1200px) {
-      .main-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Oracle JSON Relational Duality — Guided Demo (Relational ↔ Duality)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);
+    color:#2c3e50; padding:20px; min-height:100vh;
+  }
+  .container{
+    max-width:1400px; margin:0 auto; background:rgba(255,255,255,.96);
+    border-radius:16px; padding:24px 24px 32px; box-shadow:0 18px 42px rgba(0,0,0,.25);
+  }
+
+  /* Title */
+  .title{ display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:18px }
+  .title img{ height:40px; width:auto }
+  .title h1{ font-size:1.9rem; font-weight:800; text-shadow:2px 2px 4px rgba(0,0,0,.08) }
+
+  /* Button rows */
+  .rows{ display:flex; flex-direction:column; gap:10px; margin:10px 0 18px }
+  .row{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; background:#f6f8fb;
+    border:1px solid #e6eaef; padding:10px; border-radius:12px;
+  }
+  .row .label{ font-weight:900; color:#34495e; margin-right:6px }
+  .row .spacer{ flex:1 }
+  button{
+    padding:10px 14px; border:none; border-radius:999px; cursor:pointer; font-weight:700;
+    background:#ecf0f1; color:#2c3e50; transition:transform .15s, box-shadow .15s, opacity .15s;
+  }
+  button:hover{ transform:translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.12) }
+  .b-primary{ background:linear-gradient(45deg,#3498db,#2980b9); color:#fff }
+  .b-success{ background:linear-gradient(45deg,#27ae60,#229954); color:#fff }
+  .b-warning{ background:linear-gradient(45deg,#f39c12,#e67e22); color:#fff }
+  .b-danger{ background:linear-gradient(45deg,#e74c3c,#c0392b); color:#fff }
+  .b-ghost{ background:#fff; border:1px solid #dfe6ee }
+  .small{ font-size:.85rem; padding:8px 12px }
+
+  /* 2-column layout */
+  .grid{
+    display:grid; grid-template-columns: 1fr 1fr; gap:18px;
+  }
+  @media (max-width: 1000px){ .grid{ grid-template-columns: 1fr; } }
+
+  .panel{
+    background:#fff; border-radius:14px; padding:16px; border:1px solid #e6eaef;
+    box-shadow:0 8px 18px rgba(0,0,0,.08); position:relative; overflow:hidden;
+  }
+  .panel-header{
+    display:flex; gap:10px; align-items:center; padding-bottom:10px; border-bottom:3px solid #e74c3c; margin-bottom:12px
+  }
+  .panel-icon{
+    width:38px; height:38px; border-radius:10px; display:grid; place-items:center; color:#fff; font-weight:900
+  }
+  .icon-sql{ background:linear-gradient(135deg,#e74c3c,#c0392b) }
+  .icon-json{ background:linear-gradient(135deg,#3498db,#2980b9) }
+  .panel-title{ font-weight:900; font-size:1.05rem }
+  .badge{ margin-left:auto; font-size:.75rem; font-weight:900; color:#fff; padding:3px 8px; border-radius:999px; background:#9b59b6 }
+
+  /* Read-only code blocks */
+  pre.code{
+    background:#111a22; color:#e8edf2; border:2px solid #203042; border-radius:10px;
+    padding:12px; min-height:220px; font:13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+    overflow:auto; white-space:pre; user-select:text;
+  }
+  pre.json{
+    background:#1e1e1e; border-color:#2a3b4f;
+  }
+  .hint{ margin-top:8px; color:#55687b; font-size:.9rem }
+  .muted{ opacity:.9 }
+
+  /* Tables */
+  .tables{ display:grid; grid-template-columns: 1fr; gap:14px; margin-top:12px }
+  table{ width:100%; border-collapse:separate; border-spacing:0; border-radius:10px; overflow:hidden }
+  th{ background:linear-gradient(135deg,#34495e,#2c3e50); color:#fff; text-align:left; padding:8px; font-size:.85rem }
+  td{ background:#fff; padding:8px; border-bottom:1px solid #ecf0f1; font-size:.92rem }
+  tr:hover td{ background:#f8f9fb }
+
+  /* Toast */
+  .toast{
+    position:fixed; top:18px; left:50%; transform:translateX(-50%);
+    background:#2c3e50; color:#fff; border-left:4px solid #3498db; padding:10px 16px; border-radius:999px;
+    box-shadow:0 8px 18px rgba(0,0,0,.2); z-index:9999; display:none
+  }
+  .toast.show{ display:block }
+  .toast.ok{ border-left-color:#27ae60 } .toast.warn{ border-left-color:#f39c12 }
+  .toast.err{ border-left-color:#e74c3c }
+
+  /* subtle highlight */
+  .pulse{ animation:pulse 1s ease-in-out 2 }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(39,174,96,0.0) }
+    50%{ box-shadow:0 0 0 6px rgba(39,174,96,0.25) }
+    100%{ box-shadow:0 0 0 0 rgba(39,174,96,0.0) }
+  }
+</style>
 </head>
 <body>
   <div class="container">
-    <h1>Oracle JSON Relational Duality – Interactive Demo</h1>
-    
-    <div class="controls">
-      <div class="button-row">
-        <button id="createDuality" class="btn-special">✨ Create Duality View</button>
+    <div class="title">
+      <img src="theo.png" alt="Oracle"/>
+      <h1>JSON Relational Duality — Guided, Button-Driven Demo</h1>
+    </div>
+
+    <!-- Button Rows -->
+    <div class="rows">
+      <!-- Row 1: Relational -->
+      <div class="row" id="rowRel">
+        <div class="label">Relational:</div>
+        <button class="b-success small" id="btnPopulate">Populate Orders</button>
+        <button class="b-primary small" id="btnInsSQL">Insert (SQL)</button>
+        <button class="b-warning small" id="btnQrySQL">Query (Relational)</button>
+        <button class="b-primary small" id="btnUpdSQL">Update (SQL)</button>
+        <div class="spacer"></div>
+        <button class="b-ghost small" id="btnReset">Reset</button>
       </div>
-      
-      <div class="label">📊 Relational Operations</div>
-      <div class="button-row">
-        <button id="populateSQL" class="btn-primary">📝 Populate Orders (SQL)</button>
-        <button id="insertSQL" class="btn-success">➕ Insert Order (SQL)</button>
-        <button id="updateSQL" class="btn-warning">✏️ Update Order (SQL)</button>
-        <button id="querySQL" class="btn-danger">🔍 Query Orders (SQL)</button>
-      </div>
-      
-      <div class="label">🔄 Duality View Operations</div>
-      <div class="button-row" id="dualityButtons" style="display:none;">
-        <button id="insertJSON" class="btn-primary">➕ Insert via JSON</button>
-        <button id="updateJSON" class="btn-warning">✏️ Update via JSON</button>
-        <button id="queryJSON" class="btn-danger">🔍 Query as JSON</button>
-        <button id="selectJSON" class="btn-success">📄 Select Full Document</button>
+      <!-- Row 2: Duality View -->
+      <div class="row" id="rowDv">
+        <div class="label">Duality View:</div>
+        <button class="b-primary small" id="btnInsDV" disabled>Insert (Duality)</button>
+        <button class="b-warning small" id="btnSelectJSON" disabled>Select from JSON</button>
+        <button class="b-warning small" id="btnQryJSON" disabled>Query (JSON)</button>
+        <button class="b-primary small" id="btnUpdDV" disabled>Update (Duality)</button>
+        <div class="spacer"></div>
+        <!-- Create DV pinned to the right -->
+        <button class="b-success small" id="btnCreateDV">Create Duality View</button>
       </div>
     </div>
-    
-    <div class="main-grid">
-      <!-- SQL Panel -->
-      <div class="panel">
+
+    <!-- Two columns -->
+    <div class="grid">
+      <!-- LEFT: SQL PROMPT + Relational Tables -->
+      <section class="panel" id="sqlPanel">
         <div class="panel-header">
-          <span class="panel-title">📝 SQL Prompt</span>
+          <div class="panel-icon icon-sql">Σ</div>
+          <div class="panel-title">SQL PROMPT (Relational Operations)</div>
+          <div class="badge">Read-only</div>
         </div>
-        <div id="sqlDisplay" class="code-display">-- Ready to execute SQL commands
--- Click buttons above to see SQL operations</div>
-      </div>
-      
-      <!-- Tables Panel -->
-      <div class="panel">
+        <pre class="code" id="sqlPrompt">-- Welcome. This is the RELATIONAL world (tables only).
+-- Use the Relational buttons above to populate, insert, query, and update via SQL.
+</pre>
+        <div class="hint">Before Duality existed, <em>this</em> was the entire world: normalized tables + SQL.</div>
+
+        <div class="tables" id="relationalTables">
+          <div>
+            <h4 class="muted" style="margin:10px 0 6px">Orders</h4>
+            <table id="tOrders"><thead><tr><th>Order ID</th><th>Customer ID</th><th>Status</th><th>Total</th></tr></thead><tbody></tbody></table>
+          </div>
+          <div>
+            <h4 class="muted" style="margin:10px 0 6px">Customers</h4>
+            <table id="tCustomers"><thead><tr><th>Customer ID</th><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody></tbody></table>
+          </div>
+          <div>
+            <h4 class="muted" style="margin:10px 0 6px">Order Items</h4>
+            <table id="tItems"><thead><tr><th>Order ID</th><th>Product ID</th><th>Name</th><th>Qty</th><th>Price</th></tr></thead><tbody></tbody></table>
+          </div>
+          <div>
+            <h4 class="muted" style="margin:10px 0 6px">Catalog: Duality Views</h4>
+            <table id="tDv"><thead><tr><th>View Name</th><th>Backed By</th><th>Status</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: JSON Duality View (no tables under it) -->
+      <section class="panel" id="jsonPanel">
         <div class="panel-header">
-          <span class="panel-title">⊞ Relational Tables</span>
+          <div class="panel-icon icon-json">{}</div>
+          <div class="panel-title">JSON Duality View (Button-Driven)</div>
+          <div class="badge">Read-only</div>
         </div>
-        <div style="position:relative;">
-          <div id="dualityBadge" class="duality-badge">🔄 DUALITY VIEW ACTIVE</div>
-          
-          <h4>ORDERS</h4>
-          <table>
-            <thead>
-              <tr><th>ORDER_ID</th><th>CUSTOMER_ID</th><th>STATUS</th><th>TOTAL</th></tr>
-            </thead>
-            <tbody id="ordersTable">
-              <tr><td colspan="4" style="text-align:center; color:#999;">No data yet</td></tr>
-            </tbody>
-          </table>
-          
-          <h4>CUSTOMERS</h4>
-          <table>
-            <thead>
-              <tr><th>CUSTOMER_ID</th><th>NAME</th><th>EMAIL</th><th>TIER</th></tr>
-            </thead>
-            <tbody id="customersTable">
-              <tr><td colspan="4" style="text-align:center; color:#999;">No data yet</td></tr>
-            </tbody>
-          </table>
-          
-          <h4>ORDER_ITEMS</h4>
-          <table>
-            <thead>
-              <tr><th>ORDER_ID</th><th>PRODUCT_ID</th><th>NAME</th><th>QTY</th><th>PRICE</th></tr>
-            </thead>
-            <tbody id="itemsTable">
-              <tr><td colspan="5" style="text-align:center; color:#999;">No data yet</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <!-- JSON Panel -->
-      <div class="panel inactive" id="jsonPanel">
-        <div class="panel-header">
-          <span class="panel-title">{} JSON Document View</span>
-        </div>
-        <div id="jsonDisplay" class="code-display">// Duality View not created yet
-// Click "Create Duality View" to enable JSON operations</div>
-      </div>
+        <pre class="code json" id="jsonView">/* After you click "Create Duality View", this panel shows JSON business objects
+   fetched/inserted/updated via the Duality View. You cannot type here — follow
+   the Duality buttons above (Insert, Select, Query, Update). */
+</pre>
+        <div class="hint">Now, with Duality, you can think in JSON while the database keeps the normalized tables consistent — no duplication.</div>
+      </section>
     </div>
   </div>
-  
-  <div id="toast" class="toast"></div>
-  
-  <script>
-    // State
-    let dualityCreated = false;
-    const orders = [];
-    const customers = [];
-    const items = [];
-    
-    // DOM helpers
-    function $(id) { return document.getElementById(id); }
-    
-    function showToast(msg, duration = 2500) {
-      const toast = $('toast');
-      toast.textContent = msg;
-      toast.className = 'toast show';
-      setTimeout(() => toast.className = 'toast', duration);
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* --------------------------- In-memory state --------------------------- */
+let dvCreated = false;
+const CAP = 5; // cap to 5 orders total
+
+const relational = {
+  customers: [],
+  orders: [],   // [{orderId, customerId, status, totalAmount, orderDate, etag}]
+  items: []     // [{orderId, productId, name, quantity, price}]
+};
+
+const sample = {
+  orderId: "ORD-2024-001",
+  customer: { id: "CUST-789", name: "Alice Johnson", email: "alice@example.com", tier: "GOLD" },
+  items: [
+    { productId: "PROD-123", name: "Wireless Mouse", quantity: 2, price: 29.99 },
+    { productId: "PROD-456", name: "USB-C Cable",   quantity: 3, price: 15.99 }
+  ],
+  status: "PROCESSING",
+  totalAmount: 107.95,
+  orderDate: "2025-09-01T10:30:00Z",
+  etag: 'W/"abc123"'
+};
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+/* --------------------------- UI helpers --------------------------- */
+const $ = (s,p=document)=>p.querySelector(s);
+function setSQL(text){
+  const el = $("#sqlPrompt");
+  el.textContent = text;
+  el.classList.add("pulse"); setTimeout(()=>el.classList.remove("pulse"), 1000);
+}
+function setJSON(objOrText){
+  const el = $("#jsonView");
+  if(typeof objOrText === "string"){ el.textContent = objOrText; }
+  else { el.textContent = JSON.stringify(objOrText, null, 2); }
+  el.classList.add("pulse"); setTimeout(()=>el.classList.remove("pulse"), 1000);
+}
+function toast(msg, kind="ok"){
+  const t = $("#toast"); t.textContent = msg;
+  t.className = "toast show " + (kind==="ok"?"ok":kind==="warn"?"warn":"err");
+  setTimeout(()=> t.classList.remove("show"), 1400);
+}
+
+/* --------------------------- Tables renderer --------------------------- */
+function renderTables(){
+  const to = $("#tOrders tbody"), tc = $("#tCustomers tbody"), ti = $("#tItems tbody");
+  to.innerHTML = relational.orders.map(o=>
+    `<tr><td>${o.orderId}</td><td>${o.customerId}</td><td>${o.status}</td><td>$${(+o.totalAmount).toFixed(2)}</td></tr>`).join("") || "";
+  tc.innerHTML = relational.customers.map(c=>
+    `<tr><td>${c.id}</td><td>${c.name}</td><td>${c.email}</td><td>${c.tier}</td></tr>`).join("") || "";
+  ti.innerHTML = relational.items.map(i=>
+    `<tr><td>${i.orderId}</td><td>${i.productId}</td><td>${i.name}</td><td>${i.quantity}</td><td>$${(+i.price).toFixed(2)}</td></tr>`).join("") || "";
+}
+
+function renderDvCatalog(){
+  const tb = $("#tDv tbody");
+  tb.innerHTML = dvCreated ? `<tr><td>ORDERS_DV</td><td>ORDERS, CUSTOMERS, ORDER_ITEMS</td><td>CREATED</td></tr>` : "";
+}
+
+/* --------------------------- Cap enforcement --------------------------- */
+function pruneToCap(){
+  // Enforce CAP orders; remove oldest orders first
+  const removedIds = [];
+  while(relational.orders.length > CAP){
+    const removed = relational.orders.shift(); // oldest
+    removedIds.push(removed.orderId);
+    // remove items for that order
+    relational.items = relational.items.filter(it => it.orderId !== removed.orderId);
+    // drop customer if no other orders reference it
+    const stillRef = relational.orders.some(o => o.customerId === removed.customerId);
+    if(!stillRef){
+      relational.customers = relational.customers.filter(c => c.id !== removed.customerId);
     }
-    
-    function showSQL(sql) {
-      const formatted = sql
-        .replace(/(CREATE|TABLE|VIEW|INSERT|INTO|VALUES|UPDATE|SET|WHERE|SELECT|FROM|AS|JSON|OBJECT|AND|OR|PRIMARY|KEY|FOREIGN|REFERENCES|VARCHAR2|NUMBER|REPLACE|RELATIONAL|DUALITY|COMMIT|JOIN|ON)/gi, 
-          '<span class="sql-keyword">$1</span>')
-        .replace(/('[^']*')/g, '<span class="sql-string">$1</span>')
-        .replace(/(\b\d+\.?\d*\b)/g, '<span class="sql-number">$1</span>');
-      $('sqlDisplay').innerHTML = formatted;
-    }
-    
-    function showJSON(data) {
-      $('jsonDisplay').textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-    }
-    
-    function updateTables() {
-      // Orders table
-      const ordersHtml = orders.length > 0 
-        ? orders.map(o => `<tr><td>${o.id}</td><td>${o.custId}</td><td>${o.status}</td><td>$${o.total.toFixed(2)}</td></tr>`).join('')
-        : '<tr><td colspan="4" style="text-align:center; color:#999;">No orders</td></tr>';
-      $('ordersTable').innerHTML = ordersHtml;
-      
-      // Customers table
-      const custHtml = customers.length > 0
-        ? customers.map(c => `<tr><td>${c.id}</td><td>${c.name}</td><td>${c.email}</td><td>${c.tier}</td></tr>`).join('')
-        : '<tr><td colspan="4" style="text-align:center; color:#999;">No customers</td></tr>';
-      $('customersTable').innerHTML = custHtml;
-      
-      // Items table
-      const itemsHtml = items.length > 0
-        ? items.map(i => `<tr><td>${i.orderId}</td><td>${i.productId}</td><td>${i.name}</td><td>${i.qty}</td><td>$${i.price.toFixed(2)}</td></tr>`).join('')
-        : '<tr><td colspan="5" style="text-align:center; color:#999;">No items</td></tr>';
-      $('itemsTable').innerHTML = itemsHtml;
-    }
-    
-    // Button handlers
-    $('createDuality').onclick = function() {
-      showSQL(`-- Creating JSON Relational Duality View
-CREATE OR REPLACE JSON RELATIONAL DUALITY VIEW orders_dv AS
-  SELECT JSON {
-    'orderId'     : o.order_id,
-    'customer'    : {
-      'id'        : c.customer_id,
-      'name'      : c.name,
-      'email'     : c.email,
-      'tier'      : c.tier
-    },
-    'items'       : [
-      SELECT JSON {
-        'productId' : oi.product_id,
-        'name'      : oi.product_name,
-        'quantity'  : oi.quantity,
-        'price'     : oi.price
-      }
-      FROM order_items oi
-      WHERE oi.order_id = o.order_id
-    ],
-    'status'      : o.status,
-    'totalAmount' : o.total_amount
   }
-  FROM orders o
-  JOIN customers c ON o.customer_id = c.customer_id;`);
-      
-      setTimeout(() => {
-        dualityCreated = true;
-        this.textContent = '✓ Duality View Created';
-        this.disabled = true;
-        $('jsonPanel').classList.remove('inactive');
-        $('dualityButtons').style.display = 'flex';
-        $('dualityBadge').classList.add('show');
-        
-        if (orders.length > 0) {
-          const order = orders[0];
-          const cust = customers.find(c => c.id === order.custId);
-          const orderItems = items.filter(i => i.orderId === order.id);
-          
-          showJSON({
-            orderId: order.id,
-            customer: { id: cust.id, name: cust.name, email: cust.email, tier: cust.tier },
-            items: orderItems.map(i => ({ productId: i.productId, name: i.name, quantity: i.qty, price: i.price })),
-            status: order.status,
-            totalAmount: order.total
-          });
-        }
-        
-        showToast('✨ Duality View Created! JSON operations now available');
-      }, 1500);
-    };
-    
-    $('populateSQL').onclick = function() {
-      showSQL(`-- Creating tables
-CREATE TABLE customers (
-  customer_id VARCHAR2(20) PRIMARY KEY,
-  name VARCHAR2(100),
-  email VARCHAR2(100),
-  tier VARCHAR2(20)
-);
+  if(removedIds.length){
+    toast(`Cap ${CAP} enforced — removed oldest: ${removedIds.join(", ")}`, "warn");
+  }
+  return removedIds;
+}
 
-CREATE TABLE orders (
-  order_id VARCHAR2(20) PRIMARY KEY,
-  customer_id VARCHAR2(20),
-  status VARCHAR2(20),
-  total_amount NUMBER(10,2)
-);
+/* --------------------------- Map relational → JSON doc --------------------------- */
+function buildDocFromOrder(orderId){
+  const o = relational.orders.find(x=>x.orderId===orderId);
+  if(!o) return null;
+  const c = relational.customers.find(x=>x.id===o.customerId) || {};
+  const items = relational.items.filter(x=>x.orderId===o.orderId);
+  return {
+    orderId: o.orderId,
+    customer: clone(c),
+    items: items.map(i=>({productId:i.productId, name:i.name, quantity:i.quantity, price:i.price})),
+    status: o.status,
+    totalAmount: o.totalAmount,
+    orderDate: o.orderDate,
+    etag: o.etag
+  };
+}
 
-CREATE TABLE order_items (
-  order_id VARCHAR2(20),
-  product_id VARCHAR2(20),
-  product_name VARCHAR2(100),
-  quantity NUMBER(5),
-  price NUMBER(10,2)
-);
+function maybeRefreshJSONFromRelational(preferredId=null){
+  if(!dvCreated) return; // Only show JSON once DV exists
+  let id = preferredId;
+  if(!id && relational.orders.length){ id = relational.orders[relational.orders.length-1].orderId; } // latest
+  if(!id){ setJSON("/* No orders */"); return; }
+  const doc = buildDocFromOrder(id);
+  if(doc) setJSON(doc);
+}
 
--- Inserting data
-INSERT INTO customers VALUES ('CUST-789', 'Alice Johnson', 'alice@example.com', 'GOLD');
-INSERT INTO customers VALUES ('CUST-456', 'Bob Smith', 'bob@example.com', 'SILVER');
+/* --------------------------- Relational Buttons --------------------------- */
+function populateRelational(){
+  // Seed baseline relational world
+  relational.customers = [ clone(sample.customer) ];
+  relational.orders = [{
+    orderId: sample.orderId,
+    customerId: sample.customer.id,
+    status: sample.status,
+    totalAmount: sample.totalAmount,
+    orderDate: sample.orderDate,
+    etag: sample.etag
+  }];
+  relational.items = sample.items.map(x => ({...x, orderId: sample.orderId}));
+  pruneToCap();
 
-INSERT INTO orders VALUES ('ORD-2024-001', 'CUST-789', 'PROCESSING', 107.95);
-INSERT INTO orders VALUES ('ORD-2024-002', 'CUST-456', 'SHIPPED', 85.50);
+  setSQL(
+`-- Populate baseline relational tables
+INSERT INTO customers (id, name, email, tier)
+VALUES ('${sample.customer.id}', '${sample.customer.name}', '${sample.customer.email}', '${sample.customer.tier}');
 
-INSERT INTO order_items VALUES ('ORD-2024-001', 'PROD-123', 'Wireless Mouse', 2, 29.99);
-INSERT INTO order_items VALUES ('ORD-2024-001', 'PROD-456', 'USB-C Cable', 3, 15.99);
-INSERT INTO order_items VALUES ('ORD-2024-002', 'PROD-789', 'Keyboard', 1, 85.50);
+INSERT INTO orders (order_id, customer_id, status, total_amount, order_date, etag)
+VALUES ('${sample.orderId}', '${sample.customer.id}', '${sample.status}', ${sample.totalAmount}, TIMESTAMP '${sample.orderDate}', 'W/"abc123"');
 
-COMMIT;`);
-      
-      orders.length = 0;
-      customers.length = 0;
-      items.length = 0;
-      
-      customers.push(
-        { id: 'CUST-789', name: 'Alice Johnson', email: 'alice@example.com', tier: 'GOLD' },
-        { id: 'CUST-456', name: 'Bob Smith', email: 'bob@example.com', tier: 'SILVER' }
-      );
-      
-      orders.push(
-        { id: 'ORD-2024-001', custId: 'CUST-789', status: 'PROCESSING', total: 107.95 },
-        { id: 'ORD-2024-002', custId: 'CUST-456', status: 'SHIPPED', total: 85.50 }
-      );
-      
-      items.push(
-        { orderId: 'ORD-2024-001', productId: 'PROD-123', name: 'Wireless Mouse', qty: 2, price: 29.99 },
-        { orderId: 'ORD-2024-001', productId: 'PROD-456', name: 'USB-C Cable', qty: 3, price: 15.99 },
-        { orderId: 'ORD-2024-002', productId: 'PROD-789', name: 'Keyboard', qty: 1, price: 85.50 }
-      );
-      
-      updateTables();
-      showToast('Tables populated with sample data');
-      
-      if (dualityCreated) {
-        const order = orders[0];
-        const cust = customers.find(c => c.id === order.custId);
-        const orderItems = items.filter(i => i.orderId === order.id);
-        showJSON({
-          orderId: order.id,
-          customer: { id: cust.id, name: cust.name, email: cust.email, tier: cust.tier },
-          items: orderItems.map(i => ({ productId: i.productId, name: i.name, quantity: i.qty, price: i.price })),
-          status: order.status,
-          totalAmount: order.total
-        });
-      }
-    };
-    
-    $('insertSQL').onclick = function() {
-      showSQL(`-- Inserting new order
-INSERT INTO orders VALUES ('ORD-2024-003', 'CUST-789', 'PENDING', 45.99);
-INSERT INTO order_items VALUES ('ORD-2024-003', 'PROD-999', 'Laptop Stand', 1, 45.99);
-COMMIT;`);
-      
-      orders.push({ id: 'ORD-2024-003', custId: 'CUST-789', status: 'PENDING', total: 45.99 });
-      items.push({ orderId: 'ORD-2024-003', productId: 'PROD-999', name: 'Laptop Stand', qty: 1, price: 45.99 });
-      
-      updateTables();
-      showToast('New order inserted via SQL');
-      
-      if (dualityCreated) {
-        setTimeout(() => {
-          const cust = customers.find(c => c.id === 'CUST-789');
-          showJSON({
-            orderId: 'ORD-2024-003',
-            customer: { id: cust.id, name: cust.name, email: cust.email, tier: cust.tier },
-            items: [{ productId: 'PROD-999', name: 'Laptop Stand', quantity: 1, price: 45.99 }],
-            status: 'PENDING',
-            totalAmount: 45.99
-          });
-          showToast('JSON view auto-updated!');
-        }, 1500);
-      }
-    };
-    
-    $('updateSQL').onclick = function() {
-      if (orders.length === 0) {
-        showToast('Please populate tables first');
-        return;
-      }
-      
-      showSQL(`-- Updating order status
-UPDATE orders 
-SET status = 'SHIPPED' 
-WHERE order_id = 'ORD-2024-001';
-COMMIT;`);
-      
-      const order = orders.find(o => o.id === 'ORD-2024-001');
-      if (order) {
-        order.status = 'SHIPPED';
-        updateTables();
-        showToast('Order status updated via SQL');
-        
-        if (dualityCreated) {
-          const cust = customers.find(c => c.id === order.custId);
-          const orderItems = items.filter(i => i.orderId === order.id);
-          showJSON({
-            orderId: order.id,
-            customer: { id: cust.id, name: cust.name, email: cust.email, tier: cust.tier },
-            items: orderItems.map(i => ({ productId: i.productId, name: i.name, quantity: i.qty, price: i.price })),
-            status: 'SHIPPED',
-            totalAmount: order.total
-          });
-        }
-      }
-    };
-    
-    $('querySQL').onclick = function() {
-      if (orders.length === 0) {
-        showToast('Please populate tables first');
-        return;
-      }
-      
-      showSQL(`-- Query with joins
-SELECT 
-  o.order_id,
-  c.name AS customer_name,
-  o.status,
-  o.total_amount
+INSERT INTO order_items (order_id, product_id, name, quantity, price) VALUES
+('${sample.orderId}', 'PROD-123', 'Wireless Mouse', 2, 29.99),
+('${sample.orderId}', 'PROD-456', 'USB-C Cable',   3, 15.99);`
+  );
+  renderTables(); renderDvCatalog();
+  maybeRefreshJSONFromRelational(sample.orderId);
+  toast("Relational tables populated.");
+}
+
+function insertSQL(){
+  // Insert a new order via SQL
+  const idNum = relational.orders.length + 1;
+  const id = `ORD-2024-${String(idNum).padStart(3,'0')}`;
+  const custId = `CUST-${400 + idNum}`;
+  const c  = { id:custId, name:`User ${idNum}`, email:`user${idNum}@example.com`, tier: (idNum%2 ? "GOLD":"SILVER") };
+  const it = [{ productId:`PROD-${700+idNum}`, name:"Accessory", quantity:1, price: 19 + idNum, orderId:id }];
+
+  relational.customers.push(c);
+  relational.orders.push({ orderId:id, customerId:c.id, status:"PROCESSING", totalAmount:it[0].price, orderDate:`2025-09-${10+idNum}T12:00:00Z`, etag:`W/"${Math.random().toString(36).slice(2,7)}"` });
+  relational.items.push(...it);
+
+  const removed = pruneToCap();
+
+  setSQL(
+`-- Insert a new order via SQL (normalized). Cap ${CAP} enforced${removed.length ? " (oldest pruned: "+removed.join(", ")+")" : ""}.
+INSERT INTO customers (id, name, email, tier)
+VALUES ('${c.id}', '${c.name}', '${c.email}', '${c.tier}');
+
+INSERT INTO orders (order_id, customer_id, status, total_amount, order_date, etag)
+VALUES ('${id}', '${c.id}', 'PROCESSING', ${it[0].price.toFixed(2)}, TIMESTAMP '${`2025-09-${10+idNum}T12:00:00Z`}', '${relational.orders.find(o=>o.orderId===id).etag}');
+
+INSERT INTO order_items (order_id, product_id, name, quantity, price)
+VALUES ('${id}', '${it[0].productId}', '${it[0].name}', ${it[0].quantity}, ${it[0].price.toFixed(2)});`
+  );
+  renderTables();
+  maybeRefreshJSONFromRelational(id); // <-- reflect on JSON side if DV exists
+  toast("Inserted via SQL.");
+}
+
+function querySQL(){
+  const rows = relational.orders.map(o => ({
+    ORDER_ID:o.orderId, CUSTOMER_ID:o.customerId, STATUS:o.status, TOTAL:o.totalAmount
+  }));
+  setSQL(
+`-- Query relational tables (cap results to ${CAP})
+SELECT o.order_id, o.customer_id, o.status, o.total_amount
 FROM orders o
-JOIN customers c ON o.customer_id = c.customer_id
-WHERE o.status IN ('PROCESSING', 'PENDING');
+ORDER BY o.order_id
+FETCH FIRST ${CAP} ROWS ONLY;
 
--- Results:
--- ORD-2024-001 | Alice Johnson | PROCESSING | 107.95
--- ORD-2024-003 | Alice Johnson | PENDING | 45.99`);
-      
-      showToast('Query executed - 2 rows returned');
-    };
-    
-    $('insertJSON').onclick = function() {
-      if (!dualityCreated) return;
-      
-      showSQL(`-- Inserting via JSON Duality View
-INSERT INTO orders_dv VALUES ('{
-  "orderId": "ORD-2024-004",
-  "customer": {
-    "id": "CUST-456",
-    "name": "Bob Smith",
-    "email": "bob@example.com",
-    "tier": "SILVER"
-  },
-  "items": [{
-    "productId": "PROD-111",
-    "name": "Monitor",
-    "quantity": 1,
-    "price": 299.99
-  }],
-  "status": "PENDING",
-  "totalAmount": 299.99
-}');`);
-      
-      showJSON({
-        orderId: "ORD-2024-004",
-        customer: { id: "CUST-456", name: "Bob Smith", email: "bob@example.com", tier: "SILVER" },
-        items: [{ productId: "PROD-111", name: "Monitor", quantity: 1, price: 299.99 }],
-        status: "PENDING",
-        totalAmount: 299.99
-      });
-      
-      orders.push({ id: 'ORD-2024-004', custId: 'CUST-456', status: 'PENDING', total: 299.99 });
-      items.push({ orderId: 'ORD-2024-004', productId: 'PROD-111', name: 'Monitor', qty: 1, price: 299.99 });
-      
-      updateTables();
-      showToast('Inserted via JSON → Tables auto-updated!');
-    };
-    
-    $('updateJSON').onclick = function() {
-      if (!dualityCreated) return;
-      
-      showSQL(`-- Updating via JSON path
-UPDATE orders_dv
-SET data = JSON_TRANSFORM(data, 
-  SET '$.status' = 'COMPLETED'
-)
-WHERE JSON_VALUE(data, '$.orderId') = 'ORD-2024-002';`);
-      
-      const order = orders.find(o => o.id === 'ORD-2024-002');
-      if (order) {
-        order.status = 'COMPLETED';
-        const cust = customers.find(c => c.id === order.custId);
-        const orderItems = items.filter(i => i.orderId === order.id);
-        
-        showJSON({
-          orderId: order.id,
-          customer: { id: cust.id, name: cust.name, email: cust.email, tier: cust.tier },
-          items: orderItems.map(i => ({ productId: i.productId, name: i.name, quantity: i.qty, price: i.price })),
-          status: 'COMPLETED',
-          totalAmount: order.total
-        });
-        
-        updateTables();
-        showToast('Updated via JSON → Tables synchronized!');
-      }
-    };
-    
-    $('queryJSON').onclick = function() {
-      if (!dualityCreated) return;
-      
-      showSQL(`-- Query returns JSON
-SELECT data
+-- Result:
+-- ${rows.slice(0, CAP).map(r=>`${r.ORDER_ID} | ${r.CUSTOMER_ID} | ${r.STATUS} | ${r.TOTAL}`).join("\n-- ")}` );
+  $("#sqlPrompt").scrollTop = 0;
+
+  // Reflect a representative JSON doc if DV exists
+  if (rows.length && dvCreated){
+    maybeRefreshJSONFromRelational(rows[0].ORDER_ID);
+  }
+  toast("Queried relational tables.");
+}
+
+function updateSQL(){
+  // Toggle status of the most recent order (for clarity)
+  if(!relational.orders.length){ toast("No orders to update","warn"); return; }
+  const o = relational.orders[relational.orders.length - 1];
+  o.status = (o.status === "PROCESSING" ? "SHIPPED" : "PROCESSING");
+  setSQL(
+`-- Update via SQL (normalized)
+UPDATE orders
+   SET status = '${o.status}'
+ WHERE order_id = '${o.orderId}';`
+  );
+  renderTables();
+  maybeRefreshJSONFromRelational(o.orderId); // <-- reflect JSON side if DV exists
+  toast(`Order ${o.orderId} set to ${o.status}.`);
+}
+
+/* --------------------------- Duality View Buttons --------------------------- */
+function createDV(){
+  if(dvCreated){ toast("Duality View already exists.","warn"); return; }
+  dvCreated = true;
+  setSQL(
+`-- Create JSON Relational Duality View (conceptual)
+CREATE JSON RELATIONAL DUALITY VIEW orders_dv AS
+  SELECT
+    o.order_id        AS "orderId",
+    JSON_OBJECT(
+      'id'    VALUE c.id,
+      'name'  VALUE c.name,
+      'email' VALUE c.email,
+      'tier'  VALUE c.tier
+    )                 AS "customer",
+    JSON_ARRAYAGG(
+      JSON_OBJECT(
+        'productId' VALUE i.product_id,
+        'name'      VALUE i.name,
+        'quantity'  VALUE i.quantity,
+        'price'     VALUE i.price
+      )
+    )                 AS "items",
+    o.status          AS "status",
+    o.total_amount    AS "totalAmount",
+    o.order_date      AS "orderDate",
+    o.etag            AS "etag"
+  FROM orders o
+  JOIN customers c   ON c.id = o.customer_id
+  LEFT JOIN order_items i ON i.order_id = o.order_id
+  GROUP BY o.order_id, c.id, c.name, c.email, c.tier, o.status, o.total_amount, o.order_date, o.etag;`
+  );
+  renderDvCatalog();
+
+  // enable DV buttons
+  ["btnInsDV","btnSelectJSON","btnQryJSON","btnUpdDV"].forEach(id => { $( "#"+id ).disabled = false; });
+  $("#rowDv").classList.add("pulse");
+
+  // Immediately reflect some JSON if data exists
+  maybeRefreshJSONFromRelational();
+  toast("Duality View created. JSON access enabled.");
+}
+
+function insertDV(){
+  if(!dvCreated){ toast("Create the Duality View first.","warn"); return; }
+  // Insert a new order THROUGH the DV (conceptually a single JSON write)
+  const idNum = (relational.orders.length ? parseInt(relational.orders[relational.orders.length-1].orderId.split("-").pop())+1 : 2);
+  const id = `ORD-2024-${String(idNum).padStart(3,'0')}`;
+  const doc = {
+    orderId: id,
+    customer: { id:`CUST-${900+idNum}`, name:`DV User ${idNum}`, email:`dvu${idNum}@example.com`, tier:(idNum%2 ? "GOLD":"SILVER") },
+    items: [ { productId:`PROD-${900+idNum}`, name:"DV Item", quantity:1, price: 20 + idNum } ],
+    status: "PROCESSING",
+    totalAmount: 20 + idNum,
+    orderDate: `2025-09-${10+idNum}T09:00:00Z`,
+    etag: `W/"${Math.random().toString(36).slice(2,7)}"`
+  };
+
+  // Map JSON → relational (what Duality would do in the kernel)
+  relational.customers.push(clone(doc.customer));
+  relational.orders.push({ orderId:id, customerId:doc.customer.id, status:doc.status, totalAmount:doc.totalAmount, orderDate:doc.orderDate, etag:doc.etag });
+  relational.items.push({ ...doc.items[0], orderId:id });
+
+  const removed = pruneToCap();
+
+  setJSON(doc);
+  setSQL(
+`-- Single JSON write against orders_dv (conceptual). Cap ${CAP} enforced${removed.length ? " (oldest pruned: "+removed.join(", ")+")" : ""}.
+INSERT INTO orders_dv (document)
+VALUES (JSON(
+${JSON.stringify(doc,null,2).split("\n").map(l=>"  "+l).join("\n")}
+));`
+  );
+  renderTables();
+  toast("Inserted via Duality View (JSON → relational).");
+}
+
+function selectFromJSON(){
+  if(!dvCreated){ toast("Create the Duality View first.","warn"); return; }
+  // Show most recent order as pretty JSON and "clear" then print (replace contents)
+  if(!relational.orders.length){ toast("No data to select.","warn"); return; }
+  const o = relational.orders[relational.orders.length - 1];
+  const doc = buildDocFromOrder(o.orderId);
+  setJSON(doc);
+  setSQL(
+`-- SELECT from Duality View (JSON business object)
+SELECT JSON_DOCUMENT
 FROM orders_dv
-WHERE JSON_VALUE(data, '$.status') = 'PROCESSING';`);
-      
-      const order = orders.find(o => o.status === 'PROCESSING');
-      if (order) {
-        const cust = customers.find(c => c.id === order.custId);
-        const orderItems = items.filter(i => i.orderId === order.id);
-        
-        showJSON({
-          orderId: order.id,
-          customer: { id: cust.id, name: cust.name, email: cust.email, tier: cust.tier },
-          items: orderItems.map(i => ({ productId: i.productId, name: i.name, quantity: i.qty, price: i.price })),
-          status: order.status,
-          totalAmount: order.total
-        });
-        
-        showToast('Query returned 1 JSON document');
-      }
-    };
-    
-    $('selectJSON').onclick = function() {
-      if (!dualityCreated || orders.length === 0) return;
-      
-      showSQL(`-- Select full JSON document
-SELECT JSON_SERIALIZE(data PRETTY) 
-FROM orders_dv 
-WHERE JSON_VALUE(data, '$.orderId') = 'ORD-2024-001';`);
-      
-      const order = orders[0];
-      const cust = customers.find(c => c.id === order.custId);
-      const orderItems = items.filter(i => i.orderId === order.id);
-      
-      showJSON({
-        orderId: order.id,
-        customer: { id: cust.id, name: cust.name, email: cust.email, tier: cust.tier },
-        items: orderItems.map(i => ({ productId: i.productId, name: i.name, quantity: i.qty, price: i.price })),
-        status: order.status,
-        totalAmount: order.total,
-        _metadata: {
-          etag: 'W/"' + Math.random().toString(36).slice(2, 8) + '"',
-          lastModified: new Date().toISOString()
-        }
-      });
-      
-      showToast('Full JSON document retrieved');
-    };
-    
-    // Initial state
-    showToast('Welcome! Start by populating tables or create the Duality View');
-  </script>
+WHERE "orderId" = '${o.orderId}';`
+  );
+  toast("Pretty-printed JSON selected from Duality View.");
+}
+
+function queryJSON(){
+  if(!dvCreated){ toast("Create the Duality View first.","warn"); return; }
+  // Return up to CAP GOLD tier orders
+  const gold = relational.orders
+      .filter(o => (relational.customers.find(c=>c.id===o.customerId)?.tier==="GOLD"))
+      .slice(0, CAP)
+      .map(o => o.orderId);
+
+  setSQL(
+`-- Query the Duality View for GOLD customers (limit ${CAP})
+SELECT d."orderId", d."customer"."tier", d."status"
+FROM orders_dv d
+WHERE d."customer"."tier" = 'GOLD'
+ORDER BY d."orderId"
+FETCH FIRST ${CAP} ROWS ONLY;
+
+-- Result:
+-- ${gold.join("\n-- ") || "(none)"}`
+  );
+
+  if(gold.length){
+    setJSON(buildDocFromOrder(gold[0]));
+  } else {
+    setJSON("/* No GOLD orders found */");
+  }
+  toast("Queried JSON via Duality View.");
+}
+
+function updateDV(){
+  if(!dvCreated){ toast("Create the Duality View first.","warn"); return; }
+  // Toggle status on the most recent order (reflect back into relational)
+  if(!relational.orders.length){ toast("No orders to update.","warn"); return; }
+  const o = relational.orders[relational.orders.length - 1];
+  o.status = (o.status === "PROCESSING" ? "SHIPPED" : "PROCESSING");
+
+  setSQL(
+`-- Update through Duality View (optimistic, conceptual)
+UPDATE orders_dv
+   SET "status" = '${o.status}'
+ WHERE "orderId" = '${o.orderId}';`
+  );
+
+  // reflect both sides
+  renderTables();
+  setJSON(buildDocFromOrder(o.orderId));
+  toast(`Duality update → ${o.orderId} is now ${o.status}.`);
+}
+
+/* --------------------------- Reset --------------------------- */
+function resetAll(){
+  dvCreated = false;
+  relational.customers = [];
+  relational.orders = [];
+  relational.items = [];
+  renderTables(); renderDvCatalog();
+  setSQL(`-- Welcome. This is the RELATIONAL world (tables only).
+-- Use the Relational buttons above to populate, insert, query, and update via SQL.`);
+  setJSON(`/* After you click "Create Duality View", this panel shows JSON business objects
+   fetched/inserted/updated via the Duality View. You cannot type here — follow
+   the Duality buttons above (Insert, Select, Query, Update). */`);
+  // disable DV buttons
+  ["btnInsDV","btnSelectJSON","btnQryJSON","btnUpdDV"].forEach(id => { $( "#"+id ).disabled = true; });
+  toast("Reset complete.");
+}
+
+/* --------------------------- Wire events --------------------------- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  // initial render
+  resetAll();
+
+  // Relational
+  $("#btnPopulate").onclick = populateRelational;
+  $("#btnInsSQL").onclick   = insertSQL;
+  $("#btnQrySQL").onclick   = querySQL;
+  $("#btnUpdSQL").onclick   = updateSQL;
+
+  // Duality
+  $("#btnCreateDV").onclick   = createDV;
+  $("#btnInsDV").onclick      = insertDV;
+  $("#btnSelectJSON").onclick = selectFromJSON;
+  $("#btnQryJSON").onclick    = queryJSON;
+  $("#btnUpdDV").onclick      = updateDV;
+
+  // Reset
+  $("#btnReset").onclick = resetAll;
+});
+</script>
 </body>
 </html>
