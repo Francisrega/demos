@@ -13,6 +13,8 @@ You may add an optional video, using this format: [](youtube:YouTube video id)
 Launch the HTML demo here:
 - <a href="./interactiveJson.html" target="_blank">Open the First interactive demo</a>
 
+- <a href="./json.html" target="_blank">Open the Second interactive version demo</a>
+
 What you'll see in 1.0:
 - **Introduction**: Why JSON Relational Duality for enterprise apps
 - **Core Concept**: Treat data as JSON and relational tables—no trade-offs
