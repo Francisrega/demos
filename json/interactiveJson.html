@@ -52,7 +52,6 @@
     .btn-warning { background: linear-gradient(45deg, #f39c12, #e67e22); color: #fff; }
     .btn-danger  { background: linear-gradient(45deg, #e74c3c, #c0392b); color: #fff; }
 
-    /* === 3 sections stable layout === */
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -102,7 +101,7 @@
     @keyframes pulse {
       0% { box-shadow: 0 0 0 0 rgba(39,174,96,0.0) }
       50%{ box-shadow: 0 0 0 10px rgba(39,174,96,0.25) }
-      100%{ box-shadow: 0 0 0 0 rgba(39,174,96,0.0) }
+      100%{ { box-shadow: 0 0 0 0 rgba(39,174,96,0.0) } }
     }
 
     @keyframes rowFlash {
@@ -147,7 +146,6 @@
   <div class="container">
     <h1>Oracle JSON Relational Duality – Interactive Demo</h1>
 
-    <!-- Start row: Populate next to Create DV -->
     <div class="controls">
       <div class="button-row" id="rowStart" style="margin-bottom: 20px;">
         <button id="populateSQL" class="btn-primary">📝 Populate Orders (SQL)</button>
@@ -155,22 +153,24 @@
         <button id="resetDemo" class="btn-danger" style="margin-left: 10px;">🔄 Reset Demo</button>
       </div>
 
-      <!-- Relational operations (flow order) -->
       <div class="label">📊 Relational Operations</div>
       <div class="button-row">
         <button id="updateSQL"   class="btn-warning">✏️ Update Order (SQL)</button>
         <button id="querySQL"    class="btn-danger">🔍 Query Orders (SQL)</button>
         <button id="insertSQL"   class="btn-success">➕ Insert Order (SQL)</button>
-        <button id="deleteSQL"   class="btn-danger"  disabled>🗑️ Delete Inserted (SQL)</button>
       </div>
 
-      <!-- Duality row -->
       <div class="label">🔄 Duality View Operations</div>
       <div class="button-row" id="dualityButtons" style="display:none;">
-        <button id="insertJSON" class="btn-primary" >➕ Insert via JSON</button>
-        <button id="deleteJSON" class="btn-danger"  disabled>🗑️ Delete Inserted (JSON)</button>
+        <button id="insertJSON" class="btn-primary">➕ Insert via JSON</button>
         <button id="updateJSON" class="btn-warning">✏️ Update via JSON</button>
-        <button id="queryJSON"  class="btn-danger" >🔍 Query as JSON</button>
+        <button id="queryJSON"  class="btn-danger">🔍 Query as JSON</button>
+      </div>
+
+      <!-- Unified Delete -->
+      <div class="label">🗑️ Unified Delete (affects both views)</div>
+      <div class="button-row">
+        <button id="deleteOrder" class="btn-danger" disabled>🗑️ Delete Last Inserted</button>
       </div>
     </div>
 
@@ -200,7 +200,7 @@
         <h4>CUSTOMERS</h4>
         <table>
           <thead><tr><th>CUSTOMER_ID</th><th>NAME</th><th>EMAIL</th><th>TIER</th></tr></thead>
-          <tbody id="customersTable"><tr><td colspan="4" style="text-align:center;color:#999;">No data yet</td></tr></tbody>
+          <tbody id="customersTable"><tr><td colspan="4" style="text-align:center;color:#999;">No customers</td></tr></tbody>
         </table>
 
         <h4>ORDER_ITEMS</h4>
@@ -222,9 +222,7 @@
     </div>
   </div>
 
-  <!-- Coach marks overlay -->
   <div id="coachLayer" class="coach-layer"></div>
-
   <div id="toast" class="toast"></div>
 
   <script>
@@ -232,9 +230,8 @@
     let dualityCreated = false;
     let currentOrderId  = null;
 
-    // Track last inserted ids for toggleable deletes
-    let lastInsertedSQLId  = null;  // 'ORD-2024-003'
-    let lastInsertedJSONId = null;  // 'ORD-2024-004'
+    // One source of truth for what to delete next (regardless of SQL or JSON insert)
+    let lastInsertedId  = null;  // set by either insert action
 
     const orders = [];     // [{ id, custId, status, total }]
     const customers = [];  // [{ id, name, email, tier }]
@@ -279,7 +276,6 @@
       setTimeout(()=> el.classList.remove('pulse'), 650);
     }
 
-    // ------- Coach marks (arrows/boxes) -------
     function coach(targetEl, text, placement='top', ms=2200){
       if(!targetEl) return;
       targetEl.classList.add('glow');
@@ -289,26 +285,14 @@
       const c = document.createElement('div');
       c.className = 'callout ' + placement;
       c.textContent = text;
-
       layer.appendChild(c);
 
       const rect = targetEl.getBoundingClientRect();
-      const pad = 8;
-      let top = 0, left = 0;
-
-      if(placement === 'top'){
-        top  = rect.top + window.scrollY - c.offsetHeight - pad;
-        left = rect.left + window.scrollX + rect.width/2 - c.offsetWidth/2;
-      } else if(placement === 'bottom'){
-        top  = rect.bottom + window.scrollY + pad;
-        left = rect.left + window.scrollX + rect.width/2 - c.offsetWidth/2;
-      } else if(placement === 'left'){
-        top  = rect.top + window.scrollY + rect.height/2 - c.offsetHeight/2;
-        left = rect.left + window.scrollX - c.offsetWidth - pad;
-      } else {
-        top  = rect.top + window.scrollY + rect.height/2 - c.offsetHeight/2;
-        left = rect.right + window.scrollX + pad;
-      }
+      const pad = 8; let top = 0, left = 0;
+      if(placement === 'top'){ top=rect.top+window.scrollY-c.offsetHeight-pad; left=rect.left+window.scrollX+rect.width/2-c.offsetWidth/2; }
+      else if(placement === 'bottom'){ top=rect.bottom+window.scrollY+pad; left=rect.left+window.scrollX+rect.width/2-c.offsetWidth/2; }
+      else if(placement === 'left'){ top=rect.top+window.scrollY+rect.height/2-c.offsetHeight/2; left=rect.left+window.scrollX-c.offsetWidth-pad; }
+      else { top=rect.top+window.scrollY+rect.height/2-c.offsetHeight/2; left=rect.right+window.scrollX+pad; }
 
       const maxL = window.scrollX + document.documentElement.clientWidth - c.offsetWidth - 8;
       const minL = window.scrollX + 8;
@@ -317,23 +301,19 @@
       const minT = window.scrollY + 8;
       top = Math.max(minT, Math.min(top, maxT));
 
-      c.style.top = top + 'px';
-      c.style.left = left + 'px';
-
+      c.style.top = top + 'px'; c.style.left = left + 'px';
       setTimeout(()=> { c.remove(); }, ms);
     }
 
     function flashOrderRow(orderId, note='Changed'){
       const row = $(`ordersTable`)?.querySelector(`tr[data-oid="${orderId}"]`);
       if(row){
-        row.classList.remove('row-flash');
-        void row.offsetWidth;
-        row.classList.add('row-flash');
+        row.classList.remove('row-flash'); void row.offsetWidth; row.classList.add('row-flash');
         coach(row, `${note}: ${orderId}`, 'right');
       }
     }
 
-    // Build a JSON document from relational rows (keeps both sides in sync)
+    // Build a JSON document from relational rows (single order)
     function buildDoc(orderId){
       const o = orders.find(x => x.id === orderId);
       if(!o) return null;
@@ -346,6 +326,11 @@
         status: o.status,
         totalAmount: o.total
       };
+    }
+
+    // Build JSON documents for ALL orders (what we render on the right)
+    function buildAllDocs(){
+      return orders.map(o => buildDoc(o.id)).filter(Boolean);
     }
 
     function updateTables(){
@@ -362,30 +347,28 @@
         : `<tr><td colspan="5" style="text-align:center;color:#999;">No items</td></tr>`;
     }
 
+    // Keep tables and JSON mirrored; JSON shows ALL docs
     function syncBothSides(preferredId=null, lastSql='—', lastJson='—', flashId=null, flashNote='Changed'){
       updateTables();
+
       if(dualityCreated){
+        const docs = buildAllDocs();                         // <— render all orders
+        showJSONDoc(docs, `${docs.length} document(s)`);
+        // Maintain a "focus" for row flash / updates
         const id = preferredId || currentOrderId || (orders[orders.length-1]?.id);
-        if(id){
-          currentOrderId = id;
-          const doc = buildDoc(id);
-          if(doc) showJSONDoc(doc, lastJson);
-          else showJSONDoc('/* No document available */', lastJson);
-        }
+        if(id) currentOrderId = id;
       } else {
         setLast('json', 'Duality not created');
       }
+
       if(flashId){ flashOrderRow(flashId, flashNote); }
     }
 
-    // Toggle helpers for Insert/Delete pairs
-    function setSQLToggleState(canInsert){
-      $('insertSQL').disabled = !canInsert;
-      $('deleteSQL').disabled = canInsert;
-    }
-    function setJSONToggleState(canInsert){
-      $('insertJSON').disabled = !canInsert;
-      $('deleteJSON').disabled = canInsert;
+    // Unified toggle helpers
+    function setInsertsEnabled(enabled){
+      $('insertSQL').disabled  = !enabled;
+      $('insertJSON').disabled = !enabled || !dualityCreated; // JSON insert requires DV
+      $('deleteOrder').disabled = enabled; // delete is opposite
     }
 
     // Remove an order and its items
@@ -396,7 +379,6 @@
       for(let i = items.length - 1; i >= 0; i--){
         if(items[i].orderId === orderId) items.splice(i,1);
       }
-      // If the focused document was deleted, switch to most recent
       if(currentOrderId === orderId){
         currentOrderId = orders[orders.length-1]?.id || null;
       }
@@ -438,8 +420,7 @@ CREATE OR REPLACE JSON RELATIONAL DUALITY VIEW orders_dv AS
         $('dualityButtons').style.display = 'flex';
         coach($('jsonPanel'), 'Duality view enabled.\nJSON now mirrors tables.', 'left');
         syncBothSides(null, 'Create Duality View', 'Duality View active');
-        // JSON insert starts enabled; delete disabled until we insert
-        setJSONToggleState(true);
+        if($('deleteOrder').disabled){ $('insertJSON').disabled = false; }
         showToast('✨ Duality View Created! JSON operations now available');
       }, 600);
     };
@@ -464,8 +445,7 @@ INSERT INTO order_items VALUES ('ORD-2024-002','PROD-789','Keyboard',1,85.50);
 COMMIT;`, 'Populate tables');
 
       // Reset data and load seeds
-      orders.length = 0; customers.length = 0; items.length = 0;
-      lastInsertedSQLId = null; lastInsertedJSONId = null;
+      orders.length = 0; customers.length = 0; items.length = 0; lastInsertedId = null;
 
       customers.push(
         { id:'CUST-789', name:'Alice Johnson', email:'alice@example.com', tier:'GOLD' },
@@ -482,15 +462,11 @@ COMMIT;`, 'Populate tables');
       );
 
       currentOrderId = 'ORD-2024-001';
-
       syncBothSides(currentOrderId, 'Populate tables', dualityCreated ? 'Synced from relational' : 'Duality not created', 'ORD-2024-001', 'Seeded');
       coach($('tablesPanel'), 'Seed data inserted into 3 tables.', 'top');
       showToast('Tables populated with sample data');
 
-      // SQL insert starts enabled; delete disabled until we insert
-      setSQLToggleState(true);
-      // JSON buttons depend on whether DV exists
-      if(dualityCreated) setJSONToggleState(true);
+      setInsertsEnabled(true);
     };
 
     $('updateSQL').onclick = function(){
@@ -525,19 +501,18 @@ WHERE o.status IN ('PROCESSING','PENDING');
 
 -- Results:
 -- ${resultList}`, 'Query (PROCESSING/PENDING)');
-      coach($('sqlDisplay'), 'Join query executed.\nShowing first match in JSON (if any).', 'bottom');
 
       const first = orders.find(o => o.status === 'PROCESSING' || o.status === 'PENDING');
       if(dualityCreated && first){
         currentOrderId = first.id;
-        syncBothSides(currentOrderId, 'Query (PROCESSING/PENDING)', `Synced to ${first.id}`, first.id, 'Match');
+        syncBothSides(currentOrderId, 'Query (PROCESSING/PENDING)', `Synced`, first.id, 'Match');
       } else {
         setLast('json', dualityCreated ? 'No matching document' : 'Duality not created');
       }
       showToast('SQL query executed');
     };
 
-    // ---------- SQL Insert/Delete (toggle pair) ------------
+    // ---------- Insert (SQL) -> Unified Delete toggling ----------
     $('insertSQL').onclick = function(){
       const orderId   = 'ORD-2024-003';
       const productId = 'PROD-910';
@@ -558,36 +533,14 @@ COMMIT;`, `Insert ${orderId}`);
       items.push({ orderId, productId, name: product, qty: 1, price });
 
       currentOrderId = orderId;
-      lastInsertedSQLId = orderId;
+      lastInsertedId = orderId;
 
-      syncBothSides(currentOrderId, `Insert ${orderId}`, `Mirrored ${orderId} (PENDING)`, orderId, 'Inserted');
-
-      // Toggle: disable insert, enable delete
-      setSQLToggleState(false);
-      showToast('Insert complete. You can now delete it.');
+      syncBothSides(currentOrderId, `Insert ${orderId}`, `Mirrored`, orderId, 'Inserted');
+      setInsertsEnabled(false);
+      showToast('Insert complete. Unified delete enabled.');
     };
 
-    $('deleteSQL').onclick = function(){
-      if(!lastInsertedSQLId){ showToast('Nothing to delete yet. Insert first.'); return; }
-
-      highlightSQL(`-- Delete the last inserted SQL order
-DELETE FROM order_items WHERE order_id = '${lastInsertedSQLId}';
-DELETE FROM orders      WHERE order_id = '${lastInsertedSQLId}';
-COMMIT;`, `Delete ${lastInsertedSQLId}`);
-
-      const ok = deleteOrder(lastInsertedSQLId);
-      if(ok){
-        syncBothSides(currentOrderId, `Delete ${lastInsertedSQLId}`, `Synced after delete`, lastInsertedSQLId, 'Deleted');
-        showToast(`Deleted ${lastInsertedSQLId}`);
-        lastInsertedSQLId = null;
-        // Toggle back: enable insert, disable delete
-        setSQLToggleState(true);
-      } else {
-        showToast('Order not found; nothing deleted.');
-      }
-    };
-
-    // ----------- Duality View (JSON operations) ------------
+    // ---------- Insert (JSON) -> Unified Delete toggling ----------
     $('insertJSON').onclick = function(){
       if(!dualityCreated){ return; }
 
@@ -617,32 +570,34 @@ INSERT INTO orders_dv VALUES ('{
       items.push({ orderId, productId, name: product, qty: 1, price });
 
       currentOrderId = orderId;
-      lastInsertedJSONId = orderId;
+      lastInsertedId = orderId;
 
-      syncBothSides(currentOrderId, `Insert via JSON ${orderId}`, `Show ${orderId} (PENDING)`, orderId, 'Inserted');
+      syncBothSides(currentOrderId, `Insert via JSON ${orderId}`, `Mirrored`, orderId, 'Inserted');
       coach($('jsonPanel'), 'JSON write → relational rows created', 'left');
 
-      // Toggle: disable insert, enable delete
-      setJSONToggleState(false);
-      showToast('JSON insert complete. You can now delete it.');
+      setInsertsEnabled(false);
+      showToast('JSON insert complete. Unified delete enabled.');
     };
 
-    $('deleteJSON').onclick = function(){
-      if(!dualityCreated){ return; }
-      if(!lastInsertedJSONId){ showToast('Nothing to delete yet. Insert first.'); return; }
+    // ---------- Unified Delete ----------
+    $('deleteOrder').onclick = function(){
+      if(!lastInsertedId){
+        showToast('Nothing to delete yet. Insert first.');
+        return;
+      }
 
-      highlightSQL(`-- Delete via Duality View (conceptual)
-DELETE FROM orders_dv
- WHERE "orderId" = '${lastInsertedJSONId}';
-COMMIT;`, `Delete via JSON ${lastInsertedJSONId}`);
+      const sqlShown = dualityCreated
+        ? `-- Delete via Duality View (conceptual)\nDELETE FROM orders_dv WHERE "orderId" = '${lastInsertedId}';\nCOMMIT;`
+        : `-- Delete via SQL\nDELETE FROM order_items WHERE order_id = '${lastInsertedId}';\nDELETE FROM orders WHERE order_id = '${lastInsertedId}';\nCOMMIT;`;
 
-      const ok = deleteOrder(lastInsertedJSONId);
+      highlightSQL(sqlShown, `Delete ${lastInsertedId}`);
+
+      const ok = deleteOrder(lastInsertedId);
       if(ok){
-        syncBothSides(currentOrderId, `Delete via JSON ${lastInsertedJSONId}`, `Synced after JSON delete`, lastInsertedJSONId, 'Deleted');
-        showToast(`Deleted ${lastInsertedJSONId}`);
-        lastInsertedJSONId = null;
-        // Toggle back: enable insert, disable delete
-        setJSONToggleState(true);
+        syncBothSides(currentOrderId, `Delete ${lastInsertedId}`, `Synced`, lastInsertedId, 'Deleted');
+        showToast(`Deleted ${lastInsertedId}`);
+        lastInsertedId = null;
+        setInsertsEnabled(true);
       } else {
         showToast('Order not found; nothing deleted.');
       }
@@ -662,39 +617,17 @@ UPDATE orders_dv
 
       o.status = next;
       currentOrderId = o.id;
-      syncBothSides(currentOrderId, `Update via JSON ${o.id} → ${next}`, `Show ${o.id} → ${next}`, o.id, `Status → ${next}`);
+      syncBothSides(currentOrderId, `Update via JSON ${o.id} → ${next}`, `Mirrored`, o.id, `Status → ${next}`);
       coach($('jsonPanel'), `Status changed → ${next}`, 'left');
 
       showToast(`Duality update → ${o.id} is now ${o.status}`);
-    };
-
-    $('queryJSON').onclick = function(){
-      if(!dualityCreated){ return; }
-      const goldOrders = orders.filter(o => (customers.find(c=>c.id===o.custId)?.tier === 'GOLD'));
-      highlightSQL(`-- Query Duality View for GOLD customers
-SELECT d."orderId", d."customer"."tier", d."status"
-FROM orders_dv d
-WHERE d."customer"."tier" = 'GOLD'
-ORDER BY d."orderId";`, 'Query JSON (GOLD)');
-
-      if(goldOrders.length){
-        const first = goldOrders[0];
-        currentOrderId = first.id;
-        syncBothSides(currentOrderId, 'Query JSON (GOLD)', `Show ${first.id} (GOLD)`, first.id, 'Match');
-        coach($('jsonPanel'), 'Filtered to GOLD — showing first match', 'left');
-        showToast('JSON query returned at least 1 document');
-      } else {
-        showJSONDoc('/* No GOLD orders found */', 'No GOLD documents');
-        showToast('No GOLD documents');
-      }
     };
 
     // --------------------- Reset Demo ----------------------
     $('resetDemo').onclick = function(){
       dualityCreated = false;
       currentOrderId = null;
-      lastInsertedSQLId = null;
-      lastInsertedJSONId = null;
+      lastInsertedId = null;
 
       orders.length = 0;
       customers.length = 0;
@@ -705,9 +638,7 @@ ORDER BY d."orderId";`, 'Query JSON (GOLD)');
       $('dualityButtons').style.display = 'none';
       $('jsonPanel').classList.add('inactive');
 
-      setSQLToggleState(true);
-      setJSONToggleState(true);
-      $('deleteJSON').disabled = true; // hidden row disabled until DV created
+      setInsertsEnabled(true);
 
       $('sqlDisplay').textContent = `-- Ready to execute SQL commands
 -- Click buttons above to see SQL operations`;
