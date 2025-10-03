@@ -36,7 +36,7 @@ Key benefits:
 - Multimodal readiness: Apply vector search to text, images, and more
 - Simpler architecture: Keep data and AI search in the same platform to reduce complexity and latency
 
-## Learn More
+
 
 - Vector Search Guide (Docs): https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/
 - Product Page: https://www.oracle.com/database/ai-vector-search/
