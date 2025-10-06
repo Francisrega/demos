@@ -2,9 +2,9 @@
 
 ## About Oracle AI Vector Search
 
-Oracle AI Vector Search is a breakthrough capability in Oracle Database 23ai that enables searching data by semantic meaning rather than just keywords. This technology bridges the gap between traditional structured data and the growing volume of unstructured business data - documents, images, support tickets, and more - allowing you to search them all by their conceptual content.
+Oracle AI Vector Search is a breakthrough capability in Oracle AI Database that enables searching data by semantic meaning rather than just keywords. This technology bridges the gap between traditional structured data and the growing volume of unstructured business data - documents, images, support tickets, and more - allowing you to search them all by their conceptual content. Using ONNX-based embeddings, you can combine semantic similarity with business filters directly in SQL, keeping operations simple.
 
-This interactive demonstration uses a real-world support incident system to show how vector embeddings transform database search from simple pattern matching to intelligent semantic understanding.
+The interactive demo requires no setup or prerequisites. Simply click through the workflow to:
 
 [](youtube:REPLACE_WITH_VIDEO_ID)
 
@@ -14,20 +14,21 @@ The interactive demo requires no setup or prerequisites. Simply click through th
 - Compare traditional versus semantic search results
 - Watch real-time clustering visualization
 - See actual similarity percentages
-- Understand how different types of issues naturally organize
+- Each step displays the underlying SQL operations, making it easy to understand and apply these concepts to your own use cases.
 
-Each step displays the underlying SQL operations, making it easy to understand and apply these concepts to your own use cases.
+The interactive demo requires no setup or prerequisites. Simply click through the workflow to:
 
 ### **Try the Interactive Demo**
 Note: You can minimze the menu by clicking '≡' to better interactive with the demo.
 
-
 <iframe src="../vector-demo.html" width="100%" height="1100px" frameborder="0" style="min-width: 100%; min-height: 1100px; height: 1100px !important;" ></iframe>
 
 
-## What You'll Discover
+###  
+### 
 
-**Through the Interactive Demo:**
+### **What You'll Discover**
+**Through the Interactive Demo you will discover:**
 - How support incidents with different descriptions but similar meanings automatically cluster together
 - Why "system crash," "spontaneous reboot," and "freeze" are found together despite sharing no common keywords
 - The dramatic difference between traditional LIKE searches and semantic similarity search
@@ -61,7 +62,7 @@ A keyword search for "crash" completely misses:
 **The Vector Search Solution:**
 All these descriptions are automatically recognized as semantically related. They appear close together in vector space and are returned together in search results, regardless of the specific words used.
 
-### Flexible Vector Generation
+### **Flexible Vector Generation**
 
 Oracle provides four approaches for creating embeddings:
 1. **Pre-created vectors** from external systems
@@ -70,6 +71,18 @@ Oracle provides four approaches for creating embeddings:
 4. **In-database models** using ONNX for complete data locality
 
 The demo showcases approach #2, demonstrating how text is converted to vectors using built-in database functions.
+
+### **How this will benefit your stakeholders:**
+- **Lower TCO & complexity** - Do similarity search in the database alongside business data; avoid moving data to a separate vector store and the integration/security overhead that comes with it. 
+- **Enterprise-grade by default** - Because AI runs inside Oracle Database, you inherit HA, performance, and security: Partitioning, RAC, Sharding, Exadata, Data Guard, TDE, Key Vault, Audit Vault, VPD, and more.
+- **Deploy anywhere you already run Oracle** - Cloud, on-prem, hybrid; VMs, containers, Kubernetes. A feature of Oracle Database 23ai.
+- **Ready now** - Load an embedding model via ONNX, generate vectors, and query with vector_distance() alongside SQL filters.
+- **RAG-ready** - Retrieve governed business context for LLMs to reduce hallucinations without retraining on sensitive data.
+- **Included** - AI Vector Search is a no-charge feature in every Oracle AI Database.
+ 
+AI in the database means less friction and more impact—sharper decisions, faster innovation, and momentum that compounds.
+
+
 
 
 ## Learn More
@@ -81,5 +94,5 @@ The demo showcases approach #2, demonstrating how text is converted to vectors u
 
 ## Acknowledgements
 - Author — Francis Regalado
-- Contributors — William Masdon, Brianna Ambler, Ley Sylvester
+- Contributors — William Masdon, Brianna Ambler, Ley Sylvester, Mary Hess, David Start
 - Last Updated By/Date — Francis Regalado, October 2025

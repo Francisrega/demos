@@ -20,17 +20,16 @@
     
     .container{max-width:1400px;margin:0 auto;padding:20px}
     .button-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
-    .btn{padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+    .btn{padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;min-height:42px}
     .btn.completed{background:#16a34a !important}
-    .btn.completed::before{content:'✓ ';font-weight:bold}
+    .btn.completed::before{content:'✔ ';font-weight:bold}
     .btn-teal{background:#0d9488;color:#fff}.btn-teal:hover{background:#0f766e}
     .btn-success{background:#16a34a;color:#fff}
     .btn-gray{background:#e5e7eb;color:#374151}
     .btn-orange{background:#ea580c;color:#fff}
     .btn-blue{background:#2563eb;color:#fff}.btn-blue:hover{background:#1e40af}
     .btn-purple{background:#9333ea;color:#fff}.btn-purple:hover{background:#7c3aed}
-    .btn-danger{background:#ef4444;color:#fff}
-    .btn-setup{margin-left:auto}
+    .btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
     
     /* Mode toggle buttons */
     .btn-mode{position:relative;color:#fff}
@@ -54,13 +53,13 @@
     .search-mode-indicator.active{display:block}
     .search-mode-indicator.without{background:#fef2f2;border-color:#dc2626}
     .search-mode-indicator.with{background:#f0fdf4;border-color:#16a34a}
-    .search-mode-indicator.insert-similar{background:#fee2e2;border-color:#dc2626}
-    .search-mode-indicator.insert-dissimilar{background:#fef3c7;border-color:#f59e0b}
+    .search-mode-indicator.insert-similar{background:#f3e8ff;border-color:#9333ea}
+    .search-mode-indicator.insert-dissimilar{background:#f3e8ff;border-color:#9333ea}
     .mode-title{font-size:16px;font-weight:700;margin-bottom:4px}
     .mode-without{color:#dc2626}
     .mode-with{color:#16a34a}
-    .mode-insert-similar{color:#dc2626}
-    .mode-insert-dissimilar{color:#f59e0b}
+    .mode-insert-similar{color:#9333ea}
+    .mode-insert-dissimilar{color:#9333ea}
     .mode-description{font-size:13px;color:#6b7280}
     
     .sql-box{font-family:'Courier New',monospace;font-size:12px;color:#1f2937;white-space:pre-wrap;background:#f9fafb;padding:16px;border-radius:4px;border:1px solid #e5e7eb;min-height:180px;max-height:220px;overflow-y:auto}
@@ -100,7 +99,7 @@
     .issue-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-left:4px;white-space:nowrap}
     .badge-crash{background:#fee2e2;color:#991b1b}
     .badge-performance{background:#a7f3d0;color:#047857}
-    .badge-hardware{background:#ddd6fe;color:#5b21b6}
+    .badge-hardware{background:#dbeafe;color:#1e40af}
     .badge-other{background:#e0e7ff;color:#4338ca}
     
     .legend-section{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
@@ -122,7 +121,7 @@
                 </svg>
                 <h1>Oracle AI Vector Search</h1>
             </div>
-            <p class="header-subtitle">Incidents 💻 Organized: RAG ready retrieval for high quality LLM responses using the Oracle AI Database</p>
+            <p class="header-subtitle">From Incidents ➡️ Insight: Driving Faster, Smarter Decisions with AI Vector Search.</p>
         </div>
     </div>
 
@@ -140,7 +139,7 @@
             <button id="btnInsert1" class="btn btn-purple" onclick="insertSimilar()">Insert #1 (Similar)</button>
             <button id="btnInsert2" class="btn btn-purple" onclick="insertDissimilar()">Insert #2 (Dissimilar)</button>
             <button id="btnReset" class="btn btn-danger" onclick="resetDemo()">Reset</button>
-            <button id="btnSetup" class="btn btn-teal btn-setup" onclick="setupDemo()">Create & Update</button>
+            <button id="btnSetup" class="btn btn-teal" onclick="setupDemo()">Create & Update</button>
         </div>
 
         <div class="main-grid">
@@ -198,7 +197,6 @@
                             <span class="issue-badge badge-crash">System Crashes/Reboots</span>
                             <span class="issue-badge badge-performance">Performance Issues</span>
                             <span class="issue-badge badge-hardware">Hardware Issues</span>
-                            <span class="issue-badge badge-other">Other</span>
                         </div>
                     </div>
                     
@@ -249,7 +247,7 @@ function makeVectorForIncident(incident){
     const text = incident.vectorText.toLowerCase();
     const crashScore = (text.includes('crash') || text.includes('reboot') || text.includes('freeze')) ? 0.9 : 0.1;
     const performanceScore = (text.includes('slow') || text.includes('performance')) ? 0.9 : 0.1;
-    const hardwareScore = (text.includes('battery') || text.includes('display') || text.includes('hardware')) ? 0.9 : 0.1;
+    const hardwareScore = (text.includes('battery') || text.includes('display') || text.includes('hardware') || text.includes('paper') || text.includes('printer')) ? 0.9 : 0.1;
     
     return [
         +incident.x.toFixed(3),
@@ -294,9 +292,6 @@ function resizeVectorCanvas(){
     canvas.height = targetH;
   }
 
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-
   // redraw with fresh metrics
   drawVectorMap();
 }
@@ -307,23 +302,30 @@ function resizeVectorCanvas(){
 function drawVectorMap(){
     const canvas = document.getElementById('vectorMap');
     const ctx = canvas.getContext('2d');
-    const width = canvas.width, height = canvas.height;
     
-    ctx.clearRect(0, 0, width, height);
+    // Use CSS dimensions for drawing (not canvas pixel dimensions)
+    const cssWidth = canvas.clientWidth;
+    const cssHeight = canvas.clientHeight || (cssWidth / 2);
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Clear and set transform for high DPI
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
     
     // Draw grid
     ctx.strokeStyle = '#e5e7eb';
     ctx.lineWidth = 1;
     for(let i = 0; i <= 4; i++){
-        const x = (i * width) / 4;
-        const y = (i * height) / 4;
+        const x = (i * cssWidth) / 4;
+        const y = (i * cssHeight) / 4;
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
+        ctx.lineTo(x, cssHeight);
         ctx.stroke();
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
+        ctx.lineTo(cssWidth, y);
         ctx.stroke();
     }
     
@@ -331,26 +333,29 @@ function drawVectorMap(){
     ctx.strokeStyle = '#9ca3af';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(width/2, 0);
-    ctx.lineTo(width/2, height);
+    ctx.moveTo(cssWidth/2, 0);
+    ctx.lineTo(cssWidth/2, cssHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(0, height/2);
-    ctx.lineTo(width, height/2);
+    ctx.moveTo(0, cssHeight/2);
+    ctx.lineTo(cssWidth, cssHeight/2);
     ctx.stroke();
     
     // Axis labels
     ctx.fillStyle = '#6b7280';
     ctx.font = '11px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Semantic Dimension 1', width/2, height-5);
+    ctx.fillText('Semantic Dimension 1', cssWidth/2, cssHeight-5);
     ctx.save();
-    ctx.translate(10, height/2);
+    ctx.translate(10, cssHeight/2);
     ctx.rotate(-Math.PI/2);
     ctx.fillText('Semantic Dimension 2', 0, 0);
     ctx.restore();
     
     if(hasEmbeddings){
+        // Calculate cluster positions based on CSS dimensions
+        const clusterScale = Math.min(cssWidth, cssHeight * 2) / 800;
+        
         // Draw cluster regions with labels
         ctx.setLineDash([5, 5]);
         
@@ -358,34 +363,34 @@ function drawVectorMap(){
         ctx.strokeStyle = '#fee2e2';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(width/2 - 100, height/2 - 100, 90, 0, 2*Math.PI);
+        ctx.arc(cssWidth/2 - 100*clusterScale, cssHeight/2 - 100*clusterScale, 90*clusterScale, 0, 2*Math.PI);
         ctx.stroke();
         ctx.fillStyle = '#dc2626';
         ctx.font = '12px sans-serif';
-        ctx.fillText('System Crashes/Reboots', width/2 - 100, height/2 - 200);
+        ctx.fillText('System Crashes/Reboots', cssWidth/2 - 100*clusterScale, cssHeight/2 - 200*clusterScale);
         
         // Performance cluster  
         ctx.strokeStyle = '#a7f3d0';
         ctx.beginPath();
-        ctx.arc(width/2 + 120, height/2 - 40, 60, 0, 2*Math.PI);
+        ctx.arc(cssWidth/2 + 120*clusterScale, cssHeight/2 - 40*clusterScale, 60*clusterScale, 0, 2*Math.PI);
         ctx.stroke();
         ctx.fillStyle = '#059669';
-        ctx.fillText('Performance Issues', width/2 + 120, height/2 - 110);
+        ctx.fillText('Performance Issues', cssWidth/2 + 120*clusterScale, cssHeight/2 - 110*clusterScale);
         
         // Hardware cluster
-        ctx.strokeStyle = '#ddd6fe';
+        ctx.strokeStyle = '#dbeafe';
         ctx.beginPath();
-        ctx.arc(width/2 + 80, height/2 + 90, 65, 0, 2*Math.PI);
+        ctx.arc(cssWidth/2 + 80*clusterScale, cssHeight/2 + 90*clusterScale, 65*clusterScale, 0, 2*Math.PI);
         ctx.stroke();
-        ctx.fillStyle = '#7c3aed';
-        ctx.fillText('Hardware Issues', width/2 + 80, height/2 + 165);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillText('Hardware Issues', cssWidth/2 + 80*clusterScale, cssHeight/2 + 165*clusterScale);
         
         ctx.setLineDash([]);
         
         // Draw incidents with larger, clearer points
         currentData.forEach(incident => {
-            const x = width/2 + (incident.x * width * 0.35);
-            const y = height/2 - (incident.y * height * 0.35);
+            const x = cssWidth/2 + (incident.x * cssWidth * 0.35);
+            const y = cssHeight/2 - (incident.y * cssHeight * 0.35);
             
             let color = '#4338ca';
             const issues = incident.issues.toLowerCase();
@@ -393,10 +398,8 @@ function drawVectorMap(){
                 color = '#dc2626';
             } else if(issues.includes('slow') || issues.includes('performance')){
                 color = '#059669';
-            } else if(issues.includes('battery') || issues.includes('display')){
-                color = '#7c3aed';
-            } else if(issues.includes('paper') || issues.includes('printer')){
-                color = '#f59e0b';
+            } else if(issues.includes('battery') || issues.includes('display') || issues.includes('paper') || issues.includes('printer')){
+                color = '#2563eb';
             }
             
             if(newIncidentId && incident.id === newIncidentId){
@@ -430,25 +433,28 @@ function drawVectorMap(){
         ctx.fillStyle = '#9ca3af';
         ctx.font = '16px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Vectors will appear here after clicking "Update"', width/2, height/2);
+        ctx.fillText('Vectors will appear here after clicking "Update"', cssWidth/2, cssHeight/2);
         ctx.font = '14px sans-serif';
-        ctx.fillText('This will show how similar issues cluster together', width/2, height/2 + 25);
+        ctx.fillText('This will show how similar issues cluster together', cssWidth/2, cssHeight/2 + 25);
     }
+    
+    ctx.restore();
 }
 
 /* ==============================
    Demo Functions
    ============================== */
 function setupDemo(){
-    createTableAndInsert();
-    setTimeout(() => {
-        updateWithEmbeddings();
-        document.getElementById('btnSetup').classList.add('completed');
-    }, 500);
-}
-
-function createTableAndInsert(){
-    document.getElementById('sqlLog').textContent = `-- Step 1: Create Table with Vector Column and Insert Data
+    // Generate vectors immediately for display
+    currentData.forEach(incident => {
+        incidentVectors[incident.id] = makeVectorForIncident(incident);
+    });
+    
+    const sample = currentData[0];
+    const vec = incidentVectors[sample.id];
+    
+    // Show unified SQL with both CREATE and UPDATE
+    document.getElementById('sqlLog').textContent = `-- Create Table with Vector Column and Generate Embeddings
 CREATE TABLE support_incidents (
   incident_id NUMBER PRIMARY KEY,
   product VARCHAR2(50),
@@ -457,16 +463,33 @@ CREATE TABLE support_incidents (
   incident_vector VECTOR(8, FLOAT32)  -- Vector column for AI similarity search
 );
 
--- Inserting ${supportIncidents.length} support incidents
+-- Insert ${supportIncidents.length} support incidents
 ${supportIncidents.slice(0,2).map(inc => 
 `INSERT INTO support_incidents (incident_id, product, issues, description)
 VALUES (${inc.id}, '${inc.product}', '${inc.issues}', '${inc.description}');`).join('\n')}
 -- ... ${supportIncidents.length-2} more rows inserted
 
--- ✓ Table created with vector column ready for embeddings
--- ✓ ${supportIncidents.length} incidents inserted successfully`;
+-- Generate vector embeddings for all incidents
+UPDATE support_incidents 
+SET incident_vector = DBMS_VECTOR.UTL_TO_EMBEDDING(
+  issues || ' ' || description,  -- Combine text for richer context
+  params => JSON('{"provider":"database", "model":"all-MiniLM-L6-v2"}')
+);
+
+-- Example: Incident #${sample.id}
+-- Text: "${sample.issues} ${sample.description}"
+-- Vector: [${vec.map(v=>v.toFixed(3)).join(', ')}]
+
+-- ✔ Table created with vector column
+-- ✔ ${supportIncidents.length} incidents inserted
+-- ✔ Vectors generated - similar issues now have similar vectors
+-- ✔ Ready for semantic similarity search!`;
+    
+    hasEmbeddings = true;
+    document.getElementById('btnSetup').classList.add('completed');
     
     updateDataTable();
+    resizeVectorCanvas();
 }
 
 function updateDataTable(){
@@ -475,9 +498,11 @@ function updateDataTable(){
     html += '</tr></thead><tbody>';
     
     currentData.forEach(incident => {
-        const issueClass = incident.issues.toLowerCase().includes('crash') || incident.issues.toLowerCase().includes('reboot') ? 'badge-crash' :
-                          incident.issues.toLowerCase().includes('slow') ? 'badge-performance' :
-                          incident.issues.toLowerCase().includes('battery') || incident.issues.toLowerCase().includes('display') ? 'badge-hardware' : 'badge-other';
+        const issuesLower = incident.issues.toLowerCase();
+        const issueClass = (issuesLower.includes('crash') || issuesLower.includes('reboot') || issuesLower.includes('freeze')) ? 'badge-crash' :
+                          issuesLower.includes('slow') || issuesLower.includes('performance') ? 'badge-performance' :
+                          (issuesLower.includes('battery') || issuesLower.includes('display') || issuesLower.includes('paper') || issuesLower.includes('printer')) ? 'badge-hardware' : 
+                          'badge-other';
         
         let rowClass = '';
         if(currentSearchMode === 'without' && incident.id === 2){
@@ -501,36 +526,6 @@ function updateDataTable(){
     });
     html += '</tbody></table>';
     document.getElementById('dataTable').innerHTML = html;
-}
-
-function updateWithEmbeddings(){
-    currentData.forEach(incident => {
-        incidentVectors[incident.id] = makeVectorForIncident(incident);
-    });
-    
-    const sample = currentData[0];
-    const vec = incidentVectors[sample.id];
-    
-    document.getElementById('sqlLog').textContent = `-- Step 2: Generate Vector Embeddings
--- Using DBMS_VECTOR.UTL_TO_EMBEDDING to convert text to mathematical vectors
-
-UPDATE support_incidents 
-SET incident_vector = DBMS_VECTOR.UTL_TO_EMBEDDING(
-  issues || ' ' || description,  -- Combine text for richer context
-  params => JSON('{"provider":"database", "model":"all-MiniLM-L6-v2"}')
-);
-
--- Example: Incident #${sample.id}
--- Text: "${sample.issues} ${sample.description}"
--- Vector: [${vec.map(v=>v.toFixed(3)).join(', ')}]
-
--- ✓ Vectors generated - similar issues now have similar vectors
--- ✓ Ready for semantic similarity search!`;
-    
-    hasEmbeddings = true;
-    
-    resizeVectorCanvas();
-    updateDataTable();
 }
 
 function searchWithoutVector(){
@@ -697,7 +692,7 @@ WHERE incident_id = ${newIncident.id};
 -- Vector similarity analysis:
 -- 89.3% similar to incident #1 (Spontaneous reboot)
 -- 87.6% similar to incident #2 (System crash)
--- ✓ Automatically clusters with crash-related issues`;
+-- ✔ Automatically clusters with crash-related issues`;
     }
     
     document.getElementById('sqlLog').textContent = `-- Insert Similar Incident
@@ -709,8 +704,8 @@ INSERT INTO support_incidents VALUES (
   NULL
 );${vectorSql}
 
--- ✓ New incident #${newIncident.id} added to crash cluster
--- ✓ Notice how it appears close to other crash-related incidents`;
+-- ✔ New incident #${newIncident.id} added to crash cluster
+-- ✔ Notice how it appears close to other crash-related incidents`;
     
     document.getElementById('sqlOutput').style.display = 'none';
     document.getElementById('resultsSummary').style.display = 'none';
@@ -772,7 +767,7 @@ WHERE incident_id = ${newIncident.id};
 -- Vector similarity analysis:
 -- 23.4% similar to incident #1 (very different)
 -- 21.8% similar to incident #2 (very different)
--- ✓ Creates new cluster - semantically unrelated`;
+-- ✔ Creates new cluster - semantically unrelated`;
     }
     
     document.getElementById('sqlLog').textContent = `-- Insert Dissimilar Incident
@@ -784,8 +779,8 @@ INSERT INTO support_incidents VALUES (
   NULL
 );${vectorSql}
 
--- ✓ New incident #${newIncident.id} is an outlier
--- ✓ Notice it appears far from other clusters - different semantic meaning`;
+-- ✔ New incident #${newIncident.id} is an outlier
+-- ✔ Notice it appears far from other clusters - different semantic meaning`;
     
     document.getElementById('sqlOutput').style.display = 'none';
     document.getElementById('resultsSummary').style.display = 'none';
@@ -840,6 +835,7 @@ function displayResults(results, type){
 }
 
 function resetDemo(){
+    // Reset all state
     currentData = [...supportIncidents];
     incidentVectors = {};
     hasEmbeddings = false;
@@ -848,12 +844,14 @@ function resetDemo(){
     vectorSearchResultIds = [];
     newIncidentId = null;
     
+    // Reset all buttons
     ['btnSetup','btnWithout','btnWith','btnInsert1','btnInsert2'].forEach(id => {
         const btn = document.getElementById(id);
         btn.classList.remove('completed', 'active');
         btn.disabled = false;
     });
     
+    // Reset UI elements
     document.getElementById('sqlLog').textContent = `-- Oracle AI Vector Search Demo
 -- Support Incidents Clustering Example
 -- Ready to demonstrate the power of semantic search`;
@@ -865,15 +863,24 @@ function resetDemo(){
     
     updateDataTable();
     resizeVectorCanvas();
+    
+    // Automatically run Create & Update after reset
+    setTimeout(() => {
+        setupDemo();
+    }, 300);
 }
 
 // Initialize
+let resizeTimeout;
 window.addEventListener('load', () => {
     updateDataTable();
     resizeVectorCanvas();   // ensure correct ratio & crispness before first draw
     setTimeout(() => { setupDemo(); }, 500);
 });
-window.addEventListener('resize', resizeVectorCanvas);
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(resizeVectorCanvas, 100);
+});
 </script>
 </body>
 </html>
