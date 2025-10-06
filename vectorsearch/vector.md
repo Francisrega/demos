@@ -18,7 +18,9 @@ The interactive demo requires no setup or prerequisites. Simply click through th
 
 Each step displays the underlying SQL operations, making it easy to understand and apply these concepts to your own use cases.
 
-### Try the Interactive Demo
+### **Try the Interactive Demo**
+Note: You can minimze the menu by clicking '≡' to better interactive with the demo.
+
 
 <iframe src="../vector-demo.html" width="100%" height="1100px" frameborder="0" style="min-width: 100%; min-height: 1100px; height: 1100px !important;" ></iframe>
 
