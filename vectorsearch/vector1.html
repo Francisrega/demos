@@ -109,35 +109,6 @@
         0%, 100% { opacity: 1; }
         50% { opacity: 0.7; }
     }
-
-    /* ===== Fullscreen Toggle (bottom-right) ===== */
-    .fullscreen-toggle{
-        position:fixed;
-        right:16px;
-        bottom:16px;
-        z-index:9999;
-        width:46px;
-        height:46px;
-        border:none;
-        border-radius:10px;
-        background:#111827; /* gray-900 */
-        color:#fff;
-        box-shadow:0 8px 20px rgba(0,0,0,.25);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        cursor:pointer;
-        transition:transform .15s ease, opacity .2s ease, background .2s ease;
-        opacity:.9;
-    }
-    .fullscreen-toggle:hover{transform:translateY(-1px);opacity:1;background:#0b1220}
-    .fullscreen-toggle:active{transform:translateY(0)}
-    .fullscreen-toggle svg{width:22px;height:22px;display:block}
-    .fullscreen-toggle[data-active="1"]{background:#0d9488} /* active: teal */
-    .fullscreen-toggle[data-active="1"]:hover{background:#0f766e}
-    @media (max-width:600px){
-      .fullscreen-toggle{right:12px;bottom:12px;width:42px;height:42px}
-    }
 </style>
 </head>
 <body>
@@ -237,14 +208,6 @@
             </div>
         </div>
     </div>
-
-<!-- ===== Fullscreen Toggle Button ===== -->
-<button id="fsToggle" class="fullscreen-toggle" aria-label="Enter full screen" title="Full screen (f)">
-  <!-- "enter fullscreen" icon -->
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M9 3H5a2 2 0 0 0-2 2v4h2V5h4V3zm6 0v2h4v4h2V5a2 2 0 0 0-2-2h-4zM3 15v4a2 2 0 0 0 2 2h4v-2H5v-4H3zm18 0h-2v4h-4v2h4a2 2 0 0 0 2-2v-4z"/>
-  </svg>
-</button>
 
 <script>
 /* ==============================
@@ -907,69 +870,12 @@ function resetDemo(){
     }, 300);
 }
 
-/* ==============================
-   Fullscreen Toggle (YouTube-style)
-   ============================== */
-const fsBtn = document.getElementById('fsToggle');
-
-function isFullscreen(){
-  return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-}
-async function enterFullscreen(el){
-  const target = el || document.documentElement;
-  if (target.requestFullscreen) return target.requestFullscreen();
-  if (target.webkitRequestFullscreen) return target.webkitRequestFullscreen();
-  if (target.msRequestFullscreen) return target.msRequestFullscreen();
-}
-async function exitFullscreen(){
-  if (document.exitFullscreen) return document.exitFullscreen();
-  if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-  if (document.msExitFullscreen) return document.msExitFullscreen();
-}
-function updateFsButtonUI(){
-  const active = !!isFullscreen();
-  fsBtn.setAttribute('data-active', active ? '1' : '0');
-  fsBtn.setAttribute('aria-label', active ? 'Exit full screen' : 'Enter full screen');
-  fsBtn.title = active ? 'Exit full screen (Esc)' : 'Full screen (f)';
-  // swap icon between "enter" and "exit"
-  fsBtn.innerHTML = active
-    ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H5v4H3V5a2 2 0 0 1 2-2h6v2H9zm6-2h6a2 2 0 0 1 2 2v6h-2V9h-4V7zM3 13h2v4h4v2H5a2 2 0 0 1-2-2v-4zm18 0v4a2 2 0 0 1-2 2h-4v-2h4v-4h2z"/></svg>`
-    : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4h2V5h4V3zm6 0v2h4v4h2V5a2 2 0 0 0-2-2h-4zM3 15v4a2 2 0 0 0 2 2h4v-2H5v-4H3zm18 0h-2v4h-4v2h4a2 2 0 0 0 2-2v-4z"/></svg>`;
-}
-
-fsBtn.addEventListener('click', async () => {
-  try{
-    if(!isFullscreen()){
-      await enterFullscreen(document.documentElement); // make the whole page full screen
-    }else{
-      await exitFullscreen();
-    }
-  }catch(e){
-    console.warn('Fullscreen failed:', e);
-    alert('Fullscreen is not available in this browser or context.');
-  }
-});
-
-document.addEventListener('fullscreenchange', updateFsButtonUI);
-document.addEventListener('webkitfullscreenchange', updateFsButtonUI);
-document.addEventListener('msfullscreenchange', updateFsButtonUI);
-
-// quick keyboard shortcut (like many players): press "f" to toggle
-document.addEventListener('keydown', (e) => {
-  if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-    fsBtn.click();
-  }
-});
-
-/* ==============================
-   Initialize
-   ============================== */
+// Initialize
 let resizeTimeout;
 window.addEventListener('load', () => {
     updateDataTable();
     resizeVectorCanvas();   // ensure correct ratio & crispness before first draw
     setTimeout(() => { setupDemo(); }, 500);
-    updateFsButtonUI();
 });
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);

@@ -82,9 +82,6 @@ The demo showcases approach #2, demonstrating how text is converted to vectors u
  
 AI in the database means less friction and more impact—sharper decisions, faster innovation, and momentum that compounds.
 
-
-
-
 ## Learn More
 
 - [AI Vector Search Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/overview-ai-vector-search.html)
