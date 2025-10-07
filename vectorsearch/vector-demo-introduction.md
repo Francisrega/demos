@@ -4,8 +4,6 @@
 
 Oracle AI Vector Search is a breakthrough capability in Oracle AI Database that enables searching data by semantic meaning rather than just keywords. This technology bridges the gap between traditional structured data and the growing volume of unstructured business data - documents, images, support tickets, and more - allowing you to search them all by their conceptual content. Using ONNX-based embeddings, you can combine semantic similarity with business filters directly in SQL, keeping operations simple.
 
-The interactive demo requires no setup or prerequisites. Simply click through the workflow to:
-
 [](youtube:REPLACE_WITH_VIDEO_ID)
 
 
