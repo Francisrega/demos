@@ -14,8 +14,6 @@ The interactive demo requires no setup or prerequisites. Simply click through th
 - See actual similarity percentages
 - Each step displays the underlying SQL operations, making it easy to understand and apply these concepts to your own use cases.
 
-The interactive demo requires no setup or prerequisites. Simply click through the workflow to:
-
 ### **Try the Interactive Demo**
 
 Launch the HTML demo here:
