@@ -4,8 +4,13 @@
   "tutorials": [
     {
       "title": "Introduction",
-      "description": "Learn more about Oracle's JSON feature in Oracle Database 23ai",
+      "description": "Learn more about Oracle's JSON feature in Oracle AI Database",
       "filename": "../json-demo-introduction.md"
+    },
+    {
+      "title": "Introduction_2",
+      "description": "Learn more about Oracle's JSON feature in Oracle AI Database",
+      "filename": "../json-introduction.md"
     }
   ]
 }
