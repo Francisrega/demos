@@ -16,7 +16,7 @@ You may add an optional video, using this format: [](youtube:YouTube video id)
 ### **Try the Interactive Demo**
 Note: You can minimze the menu by clicking '≡' to better interactive with the demo.
 
-<iframe src="../json_lines.html" width="100%" height="1100px" frameborder="0" style="min-width: 100%; min-height: 1100px; height: 1100px !important;" ></iframe>
+<iframe src="../json_objects.html" width="100%" height="1100px" frameborder="0" style="min-width: 100%; min-height: 1100px; height: 1100px !important;" ></iframe>
 
 ###  
 ### 
@@ -37,11 +37,11 @@ Note: You can minimze the menu by clicking '≡' to better interactive with the 
 - **Enterprise safety net**: Governance, auditing, backup/recovery, the usual Oracle strengths apply to your JSON as well.
 -  **Works everywhere**: On-prem (Exadata/ODA), OCI (Autonomous DB, Exadata DB Service, Base DB Service), and multicloud (Oracle Database @ Azure/Google Cloud/AWS), plus Always Free and downloadable images
 
-
 ## Learn More
 - Oracle JSON Developer's Guide (Docs) : https://docs.oracle.com/en/database/oracle/oracle-database/26/adjsn/index.html
 
 - Related Livelabs Workshop : https://livelabs.oracle.com/pls/apex/r/dbpm/livelabs/view-workshop?wid=3635
+
 
 ## Acknowledgements
 - Author — Francis Regalado Database Product Manager
