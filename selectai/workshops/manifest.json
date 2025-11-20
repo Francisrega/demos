@@ -4,8 +4,8 @@
   "tutorials": [
     {
       "title": "Introduction",
-      "description": "Learn more about Oracle's JSON feature in Oracle AI Database",
-      "filename": "../json2.md"
+      "description": "Learn more about Oracle's Select AI feature in Oracle AI Database",
+      "filename": "../selectai.md"
     }
   ]
 }

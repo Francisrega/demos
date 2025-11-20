@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Select AI - Natural Language to Insights</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+            min-height: 100vh
+        }
+
+        .header {
+            background: linear-gradient(to right, #0f766e, #115e59);
+            color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .1)
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 700
+        }
+
+        .header-subtitle {
+            color: #99f6e4;
+            font-size: 14px
+        }
+
+        .problem-banner {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 1400px;
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .problem-text {
+            font-size: 18px;
+            color: #856404;
+            font-weight: 600
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            min-height: 42px
+        }
+
+        .btn.completed {
+            background: #16a34a !important;
+            color: white;
+        }
+
+        .btn.completed::before {
+            content: '✓ ';
+            font-weight: bold;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-teal {
+            background: #0d9488;
+            color: #fff
+        }
+
+        .btn-teal:hover {
+            background: #0f766e
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: #fff
+        }
+
+        .btn-success:hover {
+            background: #15803d
+        }
+
+        .btn-purple {
+            background: #9333ea;
+            color: #fff
+        }
+
+        .btn-purple:hover {
+            background: #7c3aed
+        }
+
+        .btn-yellow {
+            background: #f59e0b;
+            color: #fff
+        }
+
+        .btn-yellow:hover {
+            background: #d97706
+        }
+
+        .btn-blue {
+            background: #2563eb;
+            color: #fff
+        }
+
+        .btn-blue:hover {
+            background: #1e40af
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #fff
+        }
+
+        .btn-danger:hover {
+            background: #dc2626
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+            min-height: 500px
+        }
+
+        @media (max-width: 1100px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                min-height: auto
+            }
+        }
+
+        .panel {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column
+        }
+
+        .panel-header {
+            background: #1f2937;
+            color: #fff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600
+        }
+
+        .panel-content {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column
+        }
+
+        .mode-indicator {
+            background: #f0f9ff;
+            border: 2px solid #0284c7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: none
+        }
+
+        .mode-indicator.active {
+            display: block
+        }
+
+        .mode-indicator.nl2sql {
+            background: #f0fdf4;
+            border-color: #16a34a
+        }
+
+        .mode-indicator.rag {
+            background: #f3e8ff;
+            border-color: #9333ea
+        }
+
+        .mode-indicator.chat {
+            background: #fef3c7;
+            border-color: #f59e0b
+        }
+
+        .mode-indicator.agent {
+            background: #dbeafe;
+            border-color: #2563eb
+        }
+
+        .mode-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .mode-description {
+            font-size: 13px;
+            color: #6b7280
+        }
+
+        .query-box {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #f9fafb;
+            padding: 16px;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            margin: 12px 0;
+            white-space: pre-wrap;
+            min-height: 100px
+        }
+
+        .results-summary {
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            display: none;
+            align-items: center;
+            gap: 8px
+        }
+
+        .results-summary.active {
+            display: flex
+        }
+
+        .results-text {
+            font-size: 14px;
+            font-weight: 600;
+            flex: 1
+        }
+
+        .phone-container {
+            background: #111827;
+            border-radius: 20px;
+            padding: 12px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px
+        }
+
+        .phone-screen {
+            background: #fff;
+            border-radius: 12px;
+            flex: 1;
+            overflow: hidden;
+            position: relative
+        }
+
+        .chat-header {
+            background: linear-gradient(to right, #0f766e, #115e59);
+            color: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px
+        }
+
+        .chat-title {
+            flex: 1
+        }
+
+        .chat-name {
+            font-weight: 600;
+            font-size: 16px
+        }
+
+        .chat-status {
+            font-size: 12px;
+            opacity: 0.9
+        }
+
+        .chat-messages {
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            background: #f9fafb
+        }
+
+        .message {
+            margin-bottom: 16px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: messageAppear 0.5s forwards
+        }
+
+        @keyframes messageAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .message.user {
+            text-align: right
+        }
+
+        .message.ai {
+            text-align: left
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5
+        }
+
+        .user .message-bubble {
+            background: #0d9488;
+            color: white;
+            border-bottom-right-radius: 4px
+        }
+
+        .ai .message-bubble {
+            background: white;
+            color: #1f2937;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 4px
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            display: inline-flex;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
+        }
+
+        .typing-indicator.active {
+            display: inline-flex
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typingDot 1.4s infinite
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s
+        }
+
+        @keyframes typingDot {
+            0%, 60%, 100% {
+                transform: translateY(0)
+            }
+            30% {
+                transform: translateY(-10px)
+            }
+        }
+
+        .chat-input {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .chat-input-field {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none
+        }
+
+        .chat-input-field:focus {
+            border-color: #0d9488
+        }
+
+        .chat-send {
+            width: 36px;
+            height: 36px;
+            background: #0d9488;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s
+        }
+
+        .chat-send:hover {
+            background: #0f766e
+        }
+
+        .data-table {
+            width: 100%;
+            font-size: 11px;
+            border-collapse: collapse;
+            margin-top: 12px
+        }
+
+        .data-table th {
+            background: #f3f4f6;
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border: 1px solid #e5e7eb
+        }
+
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            color: #1f2937
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb
+        }
+
+        .fullscreen-toggle {
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            z-index: 9999;
+            width: 46px;
+            height: 46px;
+            border: none;
+            border-radius: 10px;
+            background: #111827;
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform .15s ease, opacity .2s ease, background .2s ease;
+            opacity: .9
+        }
+
+        .fullscreen-toggle:hover {
+            transform: translateY(-1px);
+            opacity: 1;
+            background: #0b1220
+        }
+
+        .fullscreen-toggle svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+            fill: currentColor
+        }
+
+        .value-card {
+            background: #f0f9ff;
+            border: 2px solid #0284c7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px
+        }
+
+        .value-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0c4a6e;
+            margin-bottom: 8px
+        }
+
+        .value-list {
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.6
+        }
+
+        .value-item {
+            margin-bottom: 4px;
+            padding-left: 16px;
+            position: relative
+        }
+
+        .value-item::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #0284c7;
+            font-weight: bold
+        }
+
+        .intro-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0284c7;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .intro-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0c4a6e;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .intro-subtitle {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .intro-features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .intro-feature {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 3px solid #0d9488;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .intro-feature:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .intro-feature-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .intro-feature-desc {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .intro-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .intro-stat {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .intro-stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0d9488;
+        }
+
+        .intro-stat-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .intro-cta {
+            background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <h1>Oracle Select AI</h1>
+            </div>
+            <p class="header-subtitle">Natural Language to Insights, Reducing the distance between business users and their data</p>
+        </div>
+    </div>
+
+    <!-- Problem Statement -->
+    <div class="problem-banner">
+        <span style="font-size: 24px">💭</span>
+        <span class="problem-text">"I want to ask questions about my data in plain English, without writing complex SQL queries"</span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="button-group">
+            <button id="btnNL2SQL" class="btn btn-success" onclick="demoNL2SQL()">🔍 Ask About Sales Data</button>
+            <button id="btnRAG" class="btn btn-purple" onclick="demoRAG()">📚 Search Company Docs</button>
+            <button id="btnChat" class="btn btn-yellow" onclick="demoChat()">💬 Generate Content</button>
+            <button id="btnAgent" class="btn btn-blue" onclick="demoAgent()">🤖 Automate Analysis</button>
+            <button id="btnReset" class="btn btn-danger" onclick="resetDemo()">🔄 Start Over</button>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left Panel - Select AI Operations -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>⚙️</span>
+                    <span>Select AI Operations & Results</span>
+                </div>
+                <div class="panel-content">
+                    <!-- Introduction Section - Shows on Load -->
+                    <div id="introSection" class="intro-section">
+                        <div class="intro-card">
+                            <div class="intro-title">
+                                Turn everyday questions into confident decisions
+                            </div>
+                            <div class="intro-subtitle">
+                                Empower teams to get answers in plain English—no tickets, no waiting—so your business can move faster with the data you already trust.
+                            </div>
+                            <div class="intro-features">
+                                <div class="intro-feature">
+                                    <div class="intro-feature-title">Put insights in everyone's hands</div>
+                                    <div class="intro-feature-desc">Give every employee self-serve access to the facts they need, without training or specialist skills.</div>
+                                </div>
+                                <div class="intro-feature">
+                                    <div class="intro-feature-title">Speed up decisions</div>
+                                    <div class="intro-feature-desc">Go from question to answer in moments, so leaders act sooner and teams stay aligned.</div>
+                                </div>
+                                <div class="intro-feature">
+                                    <div class="intro-feature-title">Protect what matters</div>
+                                    <div class="intro-feature-desc">Keep data governed under your existing policies and controls, reducing risk and compliance effort.</div>
+                                </div>
+                                <div class="intro-feature">
+                                    <div class="intro-feature-title">Do more with what you have</div>
+                                    <div class="intro-feature-desc">Unlock new value from your current Oracle investment—no extra AI platforms to buy or manage.</div>
+                                </div>
+                                <div class="intro-feature">
+                                    <div class="intro-feature-title">Lower costs, raise productivity</div>
+                                    <div class="intro-feature-desc">Fewer manual reports and handoffs mean leaner operations and more time for high-value work.</div>
+                                </div>
+                            </div>
+                            <div class="intro-cta" style="margin-top: 16px; font-size: 13px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); color: #0c4a6e; border: 2px solid #0284c7;">
+                                Oracle Select AI helps you turn your database into a business answer engine—safe, simple, and cost-effective.
+                            </div>
+                            <div class="intro-cta">
+                                👆 Click any demo button above to see Select AI in action!
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode Indicator -->
+                    <div id="modeIndicator" class="mode-indicator">
+                        <div class="mode-title"></div>
+                        <div class="mode-description"></div>
+                    </div>
+
+                    <!-- Business Value Card -->
+                    <div id="valueCard" class="value-card" style="display: none">
+                        <div class="value-title">Business Value</div>
+                        <div class="value-list" id="valueList"></div>
+                    </div>
+
+                    <!-- Results Summary -->
+                    <div id="resultsSummary" class="results-summary">
+                        <span style="font-size: 20px">✅</span>
+                        <span class="results-text"></span>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div id="dataTableContainer" style="display: none">
+                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin: 16px 0 8px">Query Results:</div>
+                        <table id="dataTable" class="data-table"></table>
+                    </div>
+
+                    <!-- Query Display - Now below the table -->
+                    <div id="querySection" style="display: none">
+                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; margin-top: 16px">Generated SQL Query:</div>
+                        <div id="queryBox" class="query-box"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Phone Interface -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>📱</span>
+                    <span>Ask Oracle Chatbot Interface</span>
+                </div>
+                <div class="panel-content" style="padding: 20px">
+                    <div class="phone-container">
+                        <div class="phone-screen">
+                            <div class="chat-header">
+                                <div class="chat-avatar">🤖</div>
+                                <div class="chat-title">
+                                    <div class="chat-name">Oracle AI Assistant</div>
+                                    <div class="chat-status">Powered by Select AI</div>
+                                </div>
+                            </div>
+                            <div id="chatMessages" class="chat-messages">
+                                <div class="message ai">
+                                    <div class="message-bubble">
+                                        Hello! I'm your Oracle AI Assistant. I can help you query your database using natural language, find information in documents, and much more. Try clicking one of the demo buttons to see what I can do!
+                                    </div>
+                                    <div class="message-time">Just now</div>
+                                </div>
+                            </div>
+                            <div class="chat-input">
+                                <input type="text" class="chat-input-field" placeholder="Click any button above to see Select AI in action!" disabled>
+                                <button class="chat-send" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Toggle -->
+    <button id="fsToggle" class="fullscreen-toggle">
+        <svg viewBox="0 0 24 24">
+            <path d="M9 3H5a2 2 0 0 0-2 2v4h2V5h4V3zm6 0v2h4v4h2V5a2 2 0 0 0-2-2h-4zM3 15v4a2 2 0 0 0 2 2h4v-2H5v-4H3zm18 0h-2v4h-4v2h4a2 2 0 0 0 2-2v-4z"/>
+        </svg>
+    </button>
+
+    <script>
+        let currentDemo = null;
+
+        function addMessage(text, isUser = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const message = document.createElement('div');
+            message.className = `message ${isUser ? 'user' : 'ai'}`;
+            message.style.animationDelay = '0.1s';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = text;
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            const now = new Date();
+            time.textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            
+            message.appendChild(bubble);
+            message.appendChild(time);
+            chatMessages.appendChild(message);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typing = document.createElement('div');
+            typing.className = 'message ai';
+            typing.id = 'typingMessage';
+            typing.innerHTML = `
+                <div class="typing-indicator active">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTyping() {
+            const typing = document.getElementById('typingMessage');
+            if (typing) typing.remove();
+        }
+
+        function updateModeIndicator(mode, title, description) {
+            const indicator = document.getElementById('modeIndicator');
+            indicator.className = `mode-indicator ${mode} active`;
+            indicator.querySelector('.mode-title').textContent = title;
+            indicator.querySelector('.mode-description').textContent = description;
+        }
+
+        function updateValueCard(values) {
+            const card = document.getElementById('valueCard');
+            const list = document.getElementById('valueList');
+            card.style.display = 'block';
+            list.innerHTML = values.map(v => `<div class="value-item">${v}</div>`).join('');
+        }
+
+        function showResults(message) {
+            const summary = document.getElementById('resultsSummary');
+            summary.className = 'results-summary active';
+            summary.querySelector('.results-text').textContent = message;
+        }
+
+        function showQuery(sql) {
+            document.getElementById('querySection').style.display = 'block';
+            document.getElementById('queryBox').textContent = sql;
+        }
+
+        function showDataTable(headers, rows) {
+            const container = document.getElementById('dataTableContainer');
+            const table = document.getElementById('dataTable');
+            container.style.display = 'block';
+            
+            let html = '<thead><tr>';
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += '</tr></thead><tbody>';
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => html += `<td>${cell}</td>`);
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        function hideIntro() {
+            const intro = document.getElementById('introSection');
+            if (intro) intro.style.display = 'none';
+        }
+
+        function showIntro() {
+            const intro = document.getElementById('introSection');
+            if (intro) intro.style.display = 'flex';
+        }
+
+        function demoNL2SQL() {
+            resetDemo();
+            hideIntro();
+            currentDemo = 'nl2sql';
+            document.getElementById('btnNL2SQL').classList.add('completed');
+            
+            updateModeIndicator('nl2sql', '🔍 Natural Language to SQL', 
+                'Select AI automatically translates your natural language questions into optimized SQL queries specific to your database schema. No SQL knowledge required!');
+            
+            updateValueCard([
+                'Empowers business users to access data insights',
+                'Reduces dependency on technical teams',
+                'Accelerates decision-making process',
+                'Eliminates SQL syntax errors',
+                'Works with your existing database schema'
+            ]);
+            
+            setTimeout(() => {
+                addMessage("Show me our top 5 customers by revenue this year", true);
+                showTyping();
+                
+                setTimeout(() => {
+                    removeTyping();
+                    
+                    const sql = `SELECT 
+    c.customer_name,
+    c.customer_segment,
+    SUM(s.amount) as total_revenue
+FROM customers c
+JOIN sales s ON c.customer_id = s.customer_id
+WHERE EXTRACT(YEAR FROM s.sale_date) = 2025
+GROUP BY c.customer_name, c.customer_segment
+ORDER BY total_revenue DESC
+FETCH FIRST 5 ROWS ONLY`;
+                    
+                    showQuery(sql);
+                    
+                    addMessage("I've found your top 5 customers by revenue for 2025. Here are the results:");
+                    
+                    showResults('Successfully generated and executed SQL query from natural language');
+                    
+                    showDataTable(
+                        ['Customer Name', 'Segment', 'Total Revenue'],
+                        [
+                            ['Acme Corporation', 'Enterprise', '$2,847,392'],
+                            ['Global Tech Inc', 'Enterprise', '$2,341,893'],
+                            ['Innovation Labs', 'Mid-Market', '$1,923,482'],
+                            ['Digital Solutions', 'Enterprise', '$1,782,934'],
+                            ['Smart Systems Co', 'Mid-Market', '$1,623,891']
+                        ]
+                    );
+                    
+                    setTimeout(() => {
+                        addMessage("As you can see, Acme Corporation leads with $2.8M in revenue, followed by Global Tech. The Enterprise segment dominates our top 5 customers.");
+                    }, 1000);
+                }, 2000);
+            }, 500);
+        }
+
+        function demoRAG() {
+            resetDemo();
+            hideIntro();
+            currentDemo = 'rag';
+            document.getElementById('btnRAG').classList.add('completed');
+            
+            updateModeIndicator('rag', '📚 RAG with Documents', 
+                'Select AI uses Retrieval-Augmented Generation to provide accurate answers by combining your private documents with AI capabilities. Get trusted, contextual responses from your knowledge base.');
+            
+            updateValueCard([
+                'Leverages existing documentation and knowledge',
+                'Provides accurate, context-aware answers',
+                'Maintains data privacy and security',
+                'Reduces hallucinations with factual grounding',
+                'Scales institutional knowledge sharing'
+            ]);
+            
+            setTimeout(() => {
+                addMessage("What are our company's data retention policies according to the compliance manual?", true);
+                showTyping();
+                
+                setTimeout(() => {
+                    removeTyping();
+                    
+                    const sql = `SELECT DBMS_CLOUD_AI.GENERATE(
+    prompt       => 'What are our company''s data retention policies 
+                     according to the compliance manual?',
+    profile_name => 'COMPLIANCE_AI',
+    action       => 'narrate') AS answer
+FROM dual;`;
+                    
+                    showQuery(sql);
+                    
+                    addMessage("Based on your compliance documentation, here are the key data retention policies:");
+                    
+                    showResults('Successfully retrieved and summarized relevant documents using Vector Search');
+                    
+                    setTimeout(() => {
+                        addMessage("📋 **Data Retention Policies:**\n\n• Customer data: 7 years minimum\n• Financial records: 10 years\n• Employee records: 5 years post-employment\n• Email communications: 3 years\n• Security logs: 2 years\n\nThese policies comply with SOX, GDPR, and industry regulations. The manual recommends quarterly reviews to ensure compliance.");
+                    }, 1000);
+                }, 2000);
+            }, 500);
+        }
+
+        function demoChat() {
+            resetDemo();
+            hideIntro();
+            currentDemo = 'chat';
+            document.getElementById('btnChat').classList.add('completed');
+            
+            updateModeIndicator('chat', '💬 AI Chat Assistant', 
+                'Select AI provides general AI chat capabilities directly from your database, enabling intelligent conversations while maintaining context about your data and business.');
+            
+            updateValueCard([
+                'Provides instant AI assistance to users',
+                'Maintains conversation context',
+                'Integrates with existing database security',
+                'Supports multiple LLM providers',
+                'No separate AI infrastructure needed'
+            ]);
+            
+            setTimeout(() => {
+                addMessage("Can you help me write an email to notify customers about our new pricing plans?", true);
+                showTyping();
+                
+                setTimeout(() => {
+                    removeTyping();
+                    
+                    const sql = `SELECT DBMS_CLOUD_AI.GENERATE(
+    prompt       => q'[Write a professional customer email announcing our new pricing plans.
+                      Include:
+                      - clear subject line
+                      - effective date: March 1, 2025
+                      - summary of tier changes and volume discounts
+                      - reassurance: existing customers keep current rate for 12 months
+                      - link placeholder to pricing page
+                      - contact/account manager CTA
+                      - friendly, concise tone]',
+    profile_name => 'YOUR_PROFILE',
+    action       => 'narrate') AS email_draft
+FROM dual;`;
+                    
+                    showQuery(sql);
+                    
+                    addMessage("I'll help you draft a professional email for your pricing announcement:");
+                    
+                    showResults('Generated professional content using AI chat capabilities');
+                    
+                    setTimeout(() => {
+                        addMessage("📧 **Subject: Important Updates to Our Pricing Plans**\n\nDear Valued Customer,\n\nWe're excited to share updates to our pricing structure that better align with the value we deliver.\n\n**Key Changes:**\n• Simplified tier structure\n• More features in base plans\n• Volume discounts available\n• Grandfather pricing for existing customers\n\nThese changes take effect March 1, 2025. As a valued customer, your current rate is protected for the next 12 months.\n\nPlease visit our pricing page or contact your account manager with questions.\n\nBest regards,\nYour Success Team");
+                    }, 1000);
+                }, 2000);
+            }, 500);
+        }
+
+        function demoAgent() {
+            resetDemo();
+            hideIntro();
+            currentDemo = 'agent';
+            document.getElementById('btnAgent').classList.add('completed');
+            
+            updateModeIndicator('agent', '🤖 AI Agent', 
+                'Select AI Agents autonomously perform complex tasks by combining multiple capabilities - querying data, analyzing results, and taking actions based on your business rules.');
+            
+            updateValueCard([
+                'Automates complex multi-step workflows',
+                'Makes intelligent decisions based on data',
+                'Reduces manual intervention',
+                'Scales operational efficiency',
+                'Ensures consistent business logic application'
+            ]);
+            
+            setTimeout(() => {
+                addMessage("Analyze our customer churn risk and create a retention campaign for high-risk accounts", true);
+                showTyping();
+                
+                setTimeout(() => {
+                    removeTyping();
+                    
+                    // Show the SQL for the agent workflow
+                    const sql = `-- AI Agent Workflow: Churn Risk Analysis & Retention Campaign
+                    
+BEGIN
+    -- Step 1: Identify high-risk customers
+    DBMS_CLOUD_AI_AGENT.RUN_TASK(
+        agent_name => 'RETENTION_AGENT',
+        task       => 'analyze_churn_risk',
+        parameters => JSON_OBJECT('threshold' VALUE 0.7)
+    );
+    
+    -- Step 2: Analyze patterns
+    DBMS_CLOUD_AI_AGENT.RUN_TASK(
+        agent_name => 'RETENTION_AGENT',
+        task       => 'identify_risk_factors'
+    );
+    
+    -- Step 3: Generate retention strategies
+    DBMS_CLOUD_AI_AGENT.RUN_TASK(
+        agent_name => 'RETENTION_AGENT',
+        task       => 'create_retention_campaign',
+        parameters => JSON_OBJECT(
+            'personalized_offers' VALUE TRUE,
+            'auto_schedule' VALUE TRUE
+        )
+    );
+END;
+/`;
+                    
+                    showQuery(sql);
+                    
+                    addMessage("I'll analyze customer churn risk and create a retention campaign. Let me work through this step by step:");
+                    
+                    setTimeout(() => {
+                        addMessage("**Step 1:** Identifying high-risk customers...\n✓ Found 47 customers with churn risk > 70%");
+                    }, 1000);
+                    
+                    setTimeout(() => {
+                        addMessage("**Step 2:** Analyzing churn patterns...\n✓ Main factors: Low engagement (65%), Support tickets (23%), Payment delays (12%)");
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        addMessage("**Step 3:** Creating retention campaign...\n✓ Personalized offers generated\n✓ Email templates created\n✓ Account manager alerts scheduled");
+                        
+                        showResults('AI Agent successfully completed multi-step churn analysis and retention campaign creation');
+                        
+                        showDataTable(
+                            ['Customer', 'Risk Score', 'Action', 'Offer'],
+                            [
+                                ['TechStart Inc', '92%', 'Immediate Outreach', '25% discount + Success Manager'],
+                                ['DataFlow Systems', '87%', 'Priority Support', '3 months free premium support'],
+                                ['CloudFirst Ltd', '81%', 'Engagement Program', 'Free training + 20% discount'],
+                                ['Digital Dynamics', '78%', 'Account Review', 'Custom package proposal'],
+                                ['NetSolutions Co', '75%', 'Loyalty Reward', '15% renewal discount']
+                            ]
+                        );
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        addMessage("**Campaign Ready!** I've identified 47 at-risk accounts and created personalized retention strategies. The campaign is ready to launch with automated follow-ups scheduled. Expected retention improvement: 35-40%.");
+                    }, 4500);
+                }, 2000);
+            }, 500);
+        }
+
+        function resetDemo() {
+            currentDemo = null;
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('completed'));
+            document.getElementById('modeIndicator').classList.remove('active');
+            document.getElementById('valueCard').style.display = 'none';
+            document.getElementById('querySection').style.display = 'none';
+            document.getElementById('resultsSummary').classList.remove('active');
+            document.getElementById('dataTableContainer').style.display = 'none';
+            
+            // Show intro section again
+            showIntro();
+            
+            // Clear chat except initial message
+            const chatMessages = document.getElementById('chatMessages');
+            while (chatMessages.children.length > 1) {
+                chatMessages.removeChild(chatMessages.lastChild);
+            }
+        }
+
+        // Fullscreen functionality
+        const fsBtn = document.getElementById('fsToggle');
+        
+        function isFullscreen() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+        }
+        
+        async function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                return elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                return elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                return elem.msRequestFullscreen();
+            }
+        }
+        
+        async function exitFullscreen() {
+            if (document.exitFullscreen) {
+                return document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                return document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                return document.msExitFullscreen();
+            }
+        }
+        
+        function updateFsButtonUI() {
+            const active = isFullscreen();
+            fsBtn.innerHTML = active ? 
+                '<svg viewBox="0 0 24 24"><path d="M9 7H5v4H3V5a2 2 0 0 1 2-2h6v2H9zm6-2h6a2 2 0 0 1 2 2v6h-2V9h-4V7zM3 13h2v4h4v2H5a2 2 0 0 1-2-2v-4zm18 0v4a2 2 0 0 1-2 2h-4v-2h4v-4h2z"/></svg>' :
+                '<svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4h2V5h4V3zm6 0v2h4v4h2V5a2 2 0 0 0-2-2h-4zM3 15v4a2 2 0 0 0 2 2h4v-2H5v-4H3zm18 0h-2v4h-4v2h4a2 2 0 0 0 2-2v-4z"/></svg>';
+        }
+        
+        fsBtn.addEventListener('click', async () => {
+            try {
+                if (!isFullscreen()) {
+                    await enterFullscreen();
+                } else {
+                    await exitFullscreen();
+                }
+            } catch (e) {
+                console.warn('Fullscreen failed:', e);
+            }
+        });
+        
+        document.addEventListener('fullscreenchange', updateFsButtonUI);
+        document.addEventListener('webkitfullscreenchange', updateFsButtonUI);
+        document.addEventListener('msfullscreenchange', updateFsButtonUI);
+        
+        // Keyboard shortcut for fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const target = e.target;
+                if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+                    fsBtn.click();
+                }
+            }
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            updateFsButtonUI();
+        });
+    </script>
+</body>
+</html>
