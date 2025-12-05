@@ -89,8 +89,8 @@
         }
 
         .btn.completed {
-            background: #16a34a !important;
-            color: white;
+
+            /* no background / color override */
         }
 
         .btn.completed::before {
@@ -370,7 +370,8 @@
         .user .message-bubble {
             background: #0d9488;
             color: white;
-            border-bottom-right-radius: 4px
+            border-bottom-right-radius: 4px;
+            text-align: left;
         }
 
         .ai .message-bubble {
@@ -680,7 +681,7 @@
                 </svg>
                 <h1>Oracle Select AI</h1>
             </div>
-            <p class="header-subtitle">Natural Language to Insights, Reducing the distance between business users and their data</p>
+            <p class="header-subtitle">Natural Language to Insights, reducing the distance between business users and their data</p>
         </div>
     </div>
 
@@ -774,7 +775,7 @@
 
                     <!-- Query Display - Now below the table -->
                     <div id="querySection" style="display: none">
-                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; margin-top: 16px">Generated SQL Query:</div>
+                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; margin-top: 16px">Generated Query:</div>
                         <div id="queryBox" class="query-box"></div>
                     </div>
                 </div>
@@ -830,6 +831,9 @@
         let currentDemo = null;
 
         function addMessage(text, isUser = false) {
+            // Remove indentation after newlines so wrapped lines start at the left
+            text = text.replace(/\n[ \t]+/g, '\n');
+
             const chatMessages = document.getElementById('chatMessages');
             const message = document.createElement('div');
             message.className = `message ${isUser ? 'user' : 'ai'}`;
@@ -850,6 +854,7 @@
             
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+
 
         function showTyping() {
             const chatMessages = document.getElementById('chatMessages');
@@ -948,23 +953,24 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT 
-    c.customer_name,
-    c.customer_segment,
-    SUM(s.amount) as total_revenue
-FROM customers c
-JOIN sales s ON c.customer_id = s.customer_id
-WHERE EXTRACT(YEAR FROM s.sale_date) = 2025
-GROUP BY c.customer_name, c.customer_segment
-ORDER BY total_revenue DESC
-FETCH FIRST 5 ROWS ONLY`;
+                    const sql = `SELECT AI 'Show me our top 5 customers by revenue this year.';`;
+
                     
                     showQuery(sql);
-                    
-                    addMessage("I've found your top 5 customers by revenue for 2025. Here are the results:");
-                    
+
+                    addMessage(
+                        "I've found your top 5 customers by revenue for 2025. Here are the results:<br><br>" +
+                        "<ol style='margin:0; padding-left:1.25rem;'>" +
+                        "<li>Acme Corporation (Enterprise) - $2,847,392</li>" +
+                        "<li>Global Tech Inc (Enterprise) - $2,341,893</li>" +
+                        "<li>Innovation Labs (Mid-Market) - $1,923,482</li>" +
+                        "<li>Digital Solutions (Enterprise) - $1,782,934</li>" +
+                        "<li>Smart Systems Co (Mid-Market) - $1,623,891</li>" +
+                        "</ol>"
+                    );
+
                     showResults('Successfully generated and executed SQL query from natural language');
-                    
+
                     showDataTable(
                         ['Customer Name', 'Segment', 'Total Revenue'],
                         [
@@ -975,7 +981,7 @@ FETCH FIRST 5 ROWS ONLY`;
                             ['Smart Systems Co', 'Mid-Market', '$1,623,891']
                         ]
                     );
-                    
+
                     setTimeout(() => {
                         addMessage("As you can see, Acme Corporation leads with $2.8M in revenue, followed by Global Tech. The Enterprise segment dominates our top 5 customers.");
                     }, 1000);
@@ -1007,12 +1013,8 @@ FETCH FIRST 5 ROWS ONLY`;
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT DBMS_CLOUD_AI.GENERATE(
-    prompt       => 'What are our company''s data retention policies 
-                     according to the compliance manual?',
-    profile_name => 'COMPLIANCE_AI',
-    action       => 'narrate') AS answer
-FROM dual;`;
+                    const sql = `SELECT AI 'What are our company's data retention policies according to the compliance manual?';`;
+
                     
                     showQuery(sql);
                     
@@ -1021,7 +1023,18 @@ FROM dual;`;
                     showResults('Successfully retrieved and summarized relevant documents using Vector Search');
                     
                     setTimeout(() => {
-                        addMessage("📋 **Data Retention Policies:**\n\n• Customer data: 7 years minimum\n• Financial records: 10 years\n• Employee records: 5 years post-employment\n• Email communications: 3 years\n• Security logs: 2 years\n\nThese policies comply with SOX, GDPR, and industry regulations. The manual recommends quarterly reviews to ensure compliance.");
+                        addMessage(
+                            "📋 <strong>Data Retention Policies:</strong><br><br>" +
+                            "<ul style='margin:0; padding-left:1.25rem;'>" +
+                                "<li>Customer data: 7 years minimum</li>" +
+                                "<li>Financial records: 10 years</li>" +
+                                "<li>Employee records: 5 years post-employment</li>" +
+                                "<li>Email communications: 3 years</li>" +
+                                "<li>Security logs: 2 years</li>" +
+                            "</ul><br>" +
+                            "These policies comply with SOX, GDPR, and industry regulations. " +
+                            "The manual recommends quarterly reviews to ensure compliance."
+                        );
                     }, 1000);
                 }, 2000);
             }, 500);
@@ -1051,19 +1064,16 @@ FROM dual;`;
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT DBMS_CLOUD_AI.GENERATE(
-    prompt       => q'[Write a professional customer email announcing our new pricing plans.
-                      Include:
-                      - clear subject line
-                      - effective date: March 1, 2025
-                      - summary of tier changes and volume discounts
-                      - reassurance: existing customers keep current rate for 12 months
-                      - link placeholder to pricing page
-                      - contact/account manager CTA
-                      - friendly, concise tone]',
-    profile_name => 'YOUR_PROFILE',
-    action       => 'narrate') AS email_draft
-FROM dual;`;
+                    const sql = `SELECT AI chat 'Write a professional customer email announcing our new pricing plans.
+Include:
+- clear subject line
+- effective date: March 1, 2025
+- summary of tier changes and volume discounts
+- reassurance: existing customers keep current rate for 12 months
+- link placeholder to pricing page
+- contact/account manager CTA
+- friendly, concise tone';`;
+
                     
                     showQuery(sql);
                     
@@ -1104,32 +1114,17 @@ FROM dual;`;
                     
                     // Show the SQL for the agent workflow
                     const sql = `-- AI Agent Workflow: Churn Risk Analysis & Retention Campaign
-                    
 BEGIN
-    -- Step 1: Identify high-risk customers
-    DBMS_CLOUD_AI_AGENT.RUN_TASK(
-        agent_name => 'RETENTION_AGENT',
-        task       => 'analyze_churn_risk',
-        parameters => JSON_OBJECT('threshold' VALUE 0.7)
-    );
-    
-    -- Step 2: Analyze patterns
-    DBMS_CLOUD_AI_AGENT.RUN_TASK(
-        agent_name => 'RETENTION_AGENT',
-        task       => 'identify_risk_factors'
-    );
-    
-    -- Step 3: Generate retention strategies
-    DBMS_CLOUD_AI_AGENT.RUN_TASK(
-        agent_name => 'RETENTION_AGENT',
-        task       => 'create_retention_campaign',
-        parameters => JSON_OBJECT(
-            'personalized_offers' VALUE TRUE,
-            'auto_schedule' VALUE TRUE
-        )
+    -- Set the agent team that will handle this workflow
+    DBMS_CLOUD_AI_AGENT.SET_TEAM(
+        team_name => 'RETENTION_TEAM'
     );
 END;
-/`;
+/
+
+-- Ask the agent team to analyze churn and build the campaign
+SELECT AI agent 'Analyze our customer churn risk and create a retention campaign for high-risk accounts.';
+`;
                     
                     showQuery(sql);
                     
