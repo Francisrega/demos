@@ -688,7 +688,7 @@
     <!-- Problem Statement -->
     <div class="problem-banner">
         <span style="font-size: 24px">💭</span>
-        <span class="problem-text">"I want to ask questions about my data in plain English, without writing complex SQL queries"</span>
+        <span class="problem-text">"I want to ask questions about my data in natural language, without writing complex SQL queries"</span>
     </div>
 
     <!-- Main Container -->
@@ -716,15 +716,15 @@
                                 Turn everyday questions into confident decisions
                             </div>
                             <div class="intro-subtitle">
-                                Empower teams to get answers in plain English—no tickets, no waiting—so your business can move faster with the data you already trust.
+                                Empower teams to get answers in plain natural language so your business can move faster with the data you already trust.
                             </div>
                             <div class="intro-features">
                                 <div class="intro-feature">
                                     <div class="intro-feature-title">Put insights in everyone's hands</div>
-                                    <div class="intro-feature-desc">Give every employee self-serve access to the facts they need, without training or specialist skills.</div>
+                                    <div class="intro-feature-desc">Give every employee self-serve access to the data they need, without training or specialist skills.</div>
                                 </div>
                                 <div class="intro-feature">
-                                    <div class="intro-feature-title">Speed up decisions</div>
+                                    <div class="intro-feature-title">Speed decision-making</div>
                                     <div class="intro-feature-desc">Go from question to answer in moments, so leaders act sooner and teams stay aligned.</div>
                                 </div>
                                 <div class="intro-feature">
@@ -767,17 +767,18 @@
                         <span class="results-text"></span>
                     </div>
 
-                    <!-- Data Table -->
-                    <div id="dataTableContainer" style="display: none">
-                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin: 16px 0 8px">Query Results:</div>
-                        <table id="dataTable" class="data-table"></table>
-                    </div>
-
                     <!-- Query Display - Now below the table -->
                     <div id="querySection" style="display: none">
                         <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; margin-top: 16px">Generated Query:</div>
                         <div id="queryBox" class="query-box"></div>
                     </div>
+
+                    <!-- Data Table -->
+                    <div id="dataTableContainer" style="display: none">
+                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin: 16px 0 8px">Query Results:</div>
+                        <table id="dataTable" class="data-table"></table>
+                    </div>
+                    
                 </div>
             </div>
 
@@ -942,7 +943,6 @@
                 'Empowers business users to access data insights',
                 'Reduces dependency on technical teams',
                 'Accelerates decision-making process',
-                'Eliminates SQL syntax errors',
                 'Works with your existing database schema'
             ]);
             
@@ -996,12 +996,12 @@
             document.getElementById('btnRAG').classList.add('completed');
             
             updateModeIndicator('rag', '📚 RAG with Documents', 
-                'Select AI uses Retrieval-Augmented Generation to provide accurate answers by combining your private documents with AI capabilities. Get trusted, contextual responses from your knowledge base.');
+                'Select AI supports Retrieval-Augmented Generation (RAG) to provide more accurate responses by combining your trusted documents with AI capabilities. Get contextual responses from your knowledge base.');
             
             updateValueCard([
                 'Leverages existing documentation and knowledge',
-                'Provides accurate, context-aware answers',
-                'Maintains data privacy and security',
+                'Can provide more accurate, context-aware answers',
+                'Leverages database security mechanisms',
                 'Reduces hallucinations with factual grounding',
                 'Scales institutional knowledge sharing'
             ]);
@@ -1050,11 +1050,9 @@
                 'Select AI provides general AI chat capabilities directly from your database, enabling intelligent conversations while maintaining context about your data and business.');
             
             updateValueCard([
-                'Provides instant AI assistance to users',
+                'Provides immediate AI assistance to users',
                 'Maintains conversation context',
-                'Integrates with existing database security',
-                'Supports multiple LLM providers',
-                'No separate AI infrastructure needed'
+                'Supports multiple LLM providers'
             ]);
             
             setTimeout(() => {
@@ -1064,7 +1062,7 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI chat 'Write a professional customer email announcing our new pricing plans.
+                    const sql = `SELECT AI semantic 'Write a professional customer email announcing our new pricing plans.
 Include:
 - clear subject line
 - effective date: March 1, 2025
@@ -1082,7 +1080,7 @@ Include:
                     showResults('Generated professional content using AI chat capabilities');
                     
                     setTimeout(() => {
-                        addMessage("📧 **Subject: Important Updates to Our Pricing Plans**\n\nDear Valued Customer,\n\nWe're excited to share updates to our pricing structure that better align with the value we deliver.\n\n**Key Changes:**\n• Simplified tier structure\n• More features in base plans\n• Volume discounts available\n• Grandfather pricing for existing customers\n\nThese changes take effect March 1, 2025. As a valued customer, your current rate is protected for the next 12 months.\n\nPlease visit our pricing page or contact your account manager with questions.\n\nBest regards,\nYour Success Team");
+                        addMessage("<b>Subject: Important Updates to Our Pricing Plans</b>\n\n<p></br>Dear Valued Customer,\n\n</br></br>We're excited to share updates to our pricing structure that better align with the value we deliver.\n\n</br></br>Key changes include a simplified tier structure, added features in our base plans, and new volume discounts for customers with higher usage. To support continuity, existing customers will continue with their current rate for the next 12 months.\n\n</br><br>Please visit our pricing page or contact your account manager with questions.\n\n</br></br>Best regards,\n</br>Your Success Team");
                     }, 1000);
                 }, 2000);
             }, 500);
@@ -1095,7 +1093,7 @@ Include:
             document.getElementById('btnAgent').classList.add('completed');
             
             updateModeIndicator('agent', '🤖 AI Agent', 
-                'Select AI Agents autonomously perform complex tasks by combining multiple capabilities - querying data, analyzing results, and taking actions based on your business rules.');
+                'Select AI Agent autonomously perform complex tasks by combining multiple capabilities - querying data, analyzing results, and taking actions based on your business rules.');
             
             updateValueCard([
                 'Automates complex multi-step workflows',
