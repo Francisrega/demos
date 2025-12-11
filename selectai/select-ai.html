@@ -98,6 +98,29 @@
             font-weight: bold;
         }
 
+        .btn-active-step {
+            position: relative;
+            box-shadow: 0 0 0 3px #ec4899, 0 8px 15px rgba(15, 23, 42, 0.25);
+            transform: translateY(-1px);
+            z-index: 1;
+        }
+
+        /* Little pill label above the active button */
+        .btn-active-step::after {
+            content: 'Current step';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ec4899;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.35);
+            white-space: nowrap;
+        }
+
         .btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
@@ -769,13 +792,13 @@
 
                     <!-- Query Display - Now below the table -->
                     <div id="querySection" style="display: none">
-                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; margin-top: 16px">Generated Query:</div>
+                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; margin-top: 16px">Select AI Query:</div>
                         <div id="queryBox" class="query-box"></div>
                     </div>
 
                     <!-- Data Table -->
                     <div id="dataTableContainer" style="display: none">
-                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin: 16px 0 8px">Query Results:</div>
+                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin: 16px 0 8px">Chatbot Results:</div>
                         <table id="dataTable" class="data-table"></table>
                     </div>
                     
@@ -830,6 +853,19 @@
 
     <script>
         let currentDemo = null;
+
+        function setActiveStep(buttonId) {
+            // Remove active highlight from all buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('btn-active-step');
+            });
+            // Add it to the requested button
+            const active = document.getElementById(buttonId);
+            if (active) {
+                active.classList.add('btn-active-step');
+            }
+        }
+
 
         function addMessage(text, isUser = false) {
             // Remove indentation after newlines so wrapped lines start at the left
@@ -935,6 +971,7 @@
             hideIntro();
             currentDemo = 'nl2sql';
             document.getElementById('btnNL2SQL').classList.add('completed');
+            setActiveStep('btnNL2SQL');
             
             updateModeIndicator('nl2sql', '🔍 Natural Language to SQL', 
                 'Select AI automatically translates your natural language questions into optimized SQL queries specific to your database schema. No SQL knowledge required!');
@@ -953,7 +990,7 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI 'Show me our top 5 customers by revenue this year.';`;
+                    const sql = `SELECT AI Show me our top 5 customers by revenue this year.`;
 
                     
                     showQuery(sql);
@@ -969,7 +1006,7 @@
                         "</ol>"
                     );
 
-                    showResults('Successfully generated and executed SQL query from natural language');
+                    //showResults('Successfully generated and executed SQL query from natural language');
 
                     showDataTable(
                         ['Customer Name', 'Segment', 'Total Revenue'],
@@ -994,6 +1031,7 @@
             hideIntro();
             currentDemo = 'rag';
             document.getElementById('btnRAG').classList.add('completed');
+            setActiveStep('btnRAG');
             
             updateModeIndicator('rag', '📚 RAG with Documents', 
                 'Select AI supports Retrieval-Augmented Generation (RAG) to provide more accurate responses by combining your trusted documents with AI capabilities. Get contextual responses from your knowledge base.');
@@ -1013,14 +1051,14 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI 'What are our company's data retention policies according to the compliance manual?';`;
+                    const sql = `SELECT AI NARRATE What is our company data retention policy according to the compliance manual?`;
 
                     
                     showQuery(sql);
                     
                     addMessage("Based on your compliance documentation, here are the key data retention policies:");
                     
-                    showResults('Successfully retrieved and summarized relevant documents using Vector Search');
+                    //showResults('Successfully retrieved and summarized relevant documents using Vector Search');
                     
                     setTimeout(() => {
                         addMessage(
@@ -1045,6 +1083,7 @@
             hideIntro();
             currentDemo = 'chat';
             document.getElementById('btnChat').classList.add('completed');
+            setActiveStep('btnChat');
             
             updateModeIndicator('chat', '💬 AI Chat Assistant', 
                 'Select AI provides general AI chat capabilities directly from your database, enabling intelligent conversations while maintaining context about your data and business.');
@@ -1062,7 +1101,7 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI semantic 'Write a professional customer email announcing our new pricing plans.
+                    const sql = `SELECT AI CHAT Write a professional customer email announcing our new pricing plans.
 Include:
 - clear subject line
 - effective date: March 1, 2025
@@ -1070,14 +1109,14 @@ Include:
 - reassurance: existing customers keep current rate for 12 months
 - link placeholder to pricing page
 - contact/account manager CTA
-- friendly, concise tone';`;
+- friendly, concise tone`;
 
                     
                     showQuery(sql);
                     
                     addMessage("I'll help you draft a professional email for your pricing announcement:");
                     
-                    showResults('Generated professional content using AI chat capabilities');
+                    //showResults('Generated professional content using AI chat capabilities');
                     
                     setTimeout(() => {
                         addMessage("<b>Subject: Important Updates to Our Pricing Plans</b>\n\n<p></br>Dear Valued Customer,\n\n</br></br>We're excited to share updates to our pricing structure that better align with the value we deliver.\n\n</br></br>Key changes include a simplified tier structure, added features in our base plans, and new volume discounts for customers with higher usage. To support continuity, existing customers will continue with their current rate for the next 12 months.\n\n</br><br>Please visit our pricing page or contact your account manager with questions.\n\n</br></br>Best regards,\n</br>Your Success Team");
@@ -1091,6 +1130,7 @@ Include:
             hideIntro();
             currentDemo = 'agent';
             document.getElementById('btnAgent').classList.add('completed');
+            setActiveStep('btnAgent');
             
             updateModeIndicator('agent', '🤖 AI Agent', 
                 'Select AI Agent autonomously perform complex tasks by combining multiple capabilities - querying data, analyzing results, and taking actions based on your business rules.');
@@ -1121,7 +1161,7 @@ END;
 /
 
 -- Ask the agent team to analyze churn and build the campaign
-SELECT AI agent 'Analyze our customer churn risk and create a retention campaign for high-risk accounts.';
+SELECT AI AGENT Analyze our customer churn risk and create a retention campaign for high-risk accounts.
 `;
                     
                     showQuery(sql);
@@ -1139,7 +1179,7 @@ SELECT AI agent 'Analyze our customer churn risk and create a retention campaign
                     setTimeout(() => {
                         addMessage("**Step 3:** Creating retention campaign...\n✓ Personalized offers generated\n✓ Email templates created\n✓ Account manager alerts scheduled");
                         
-                        showResults('AI Agent successfully completed multi-step churn analysis and retention campaign creation');
+                        //showResults('AI Agent successfully completed multi-step churn analysis and retention campaign creation');
                         
                         showDataTable(
                             ['Customer', 'Risk Score', 'Action', 'Offer'],
@@ -1162,7 +1202,10 @@ SELECT AI agent 'Analyze our customer churn risk and create a retention campaign
 
         function resetDemo() {
             currentDemo = null;
-            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('completed'));
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('completed');
+                btn.classList.remove('btn-active-step');
+            });
             document.getElementById('modeIndicator').classList.remove('active');
             document.getElementById('valueCard').style.display = 'none';
             document.getElementById('querySection').style.display = 'none';
