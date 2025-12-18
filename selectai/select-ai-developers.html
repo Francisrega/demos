@@ -1004,9 +1004,14 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI Show me our top 5 customers by revenue this year.`;
+                    const sql = `SELECT AI Show me our top 5 customers by revenue this year.
+                
+Python
+import select_ai
+profile = select_ai.Profile(profile_name="my_oci_ai_profile")
+df = profile.run_sql(prompt="Show me our top 5 customers by revenue this year.")`;
 
-                  
+                    
                     showQuery(sql);
 
 
@@ -1066,7 +1071,12 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI NARRATE What is our company data retention policy according to the compliance manual`;
+                    const sql = `SELECT AI NARRATE What is our company data retention policy according to the compliance manual
+
+Python
+import select_ai
+profile = select_ai.Profile(profile_name="my_oci_ai_profile")
+df = profile.run_sql(prompt="What is our company data retention policy according to the compliance manual?") `;
 
                     
                     showQuery(sql);
@@ -1126,7 +1136,29 @@ Include
 - reassurance existing customers keep current rate for 12 months
 - link placeholder to pricing page
 - contact/account manager CTA
-- friendly, concise tone`;
+- friendly, concise tone
+
+
+DECLARE
+  v_response VARCHAR2(4000);
+BEGIN
+  v_response := DBMS_CLOUD_AI.GENERATE(
+    prompt => 'SELECT AI CHAT Write a professional customer email announcing our new pricing plans.
+     Include:
+     - clear subject line
+     - effective date: March 1, 2025
+     - summary of tier changes and volume discounts
+     - reassurance: existing customers keep current rate for 12 months
+     - link placeholder to pricing page
+     - contact/account manager CTA
+     - friendly, concise tone',
+    profile_name => 'OCI_GENAI',
+    action => 'chat'
+  );
+
+  DBMS_OUTPUT.PUT_LINE(v_response);
+END;
+`;
                     
                     showQuery(sql);
                     
@@ -1180,7 +1212,12 @@ END;
 /
 
 -- Ask the agent team to analyze churn and build the campaign
-SELECT AI AGENT Analyze our customer churn risk and create a retention campaign for high-risk accounts.`;
+SELECT AI AGENT Analyze our customer churn risk and create a retention campaign for high-risk accounts.
+
+Python
+team = Team.fetch(tool_name="RETENTION_TEAM")
+res = team.run(prompt="Analyze our customer churn risk and create a retention campaign for high-risk accounts.")
+print(res)`;
                     
                     showQuery(sql);
                     
