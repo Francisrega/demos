@@ -23,16 +23,16 @@ Note: You can minimize the menu by clicking '≡' to better interactive with the
 
 - **Ask About Sales Data (NL2SQL)**: See how Select AI converts a plain English requests like “Show me our top 5 customers by revenue this year” into an optimized SQL query, runs it, and returns a results table.
 - **Search Company Docs (RAG)**: Explore Retrieval Augmented Generation, where Select AI uses AI Vector Search to find relevant content in your private documents and then provides this content to your LLM to generate a contextually relevant response - reducing hallucinations and keeping answers grounded in your own policies and manuals.
-- **Generate Content (AI Chat)**: Select AI provides general AI chat capabilities to your chosen LLM directly from your database, enabling intelligent conversations while maintaining context about your data and business.
-- **Automate Analysis (Agent)**: Watch an AI Agent orchestrate multi step workflows like analyzing churn risk, identifying at risk customers, and generating a retention campaign by chaining tasks and SQL calls declared from within the database.
+- **Generate Content (AI Chat)**: Select AI provides general AI chat capabilities to your chosen LLM directly from your database, enabling intelligent conversations that maintain context about your data and business.
+- **Automate Analysis (Agent)**: Watch an AI Agent that your app developer created orchestrate multi step workflows like analyzing churn risk, identifying at risk customers, and generating a retention campaign by chaining tasks and SQL calls declared from within the database.
 
 ### Key Benefits:
 
 - **Natural language to SQL and beyond**: Business users ask questions in everyday language and Select AI generates the SQL, runs it, explains it, and can even narrate results back in natural language.
-- **One in-database gateway to many LLMs**: Work with  AI models from OCI Generative AI, OpenAI, Azure OpenAI, Cohere, Anthropic, Bedrock, and more via AI profiles, without rewriting your application logic. Easily switch between providers and models. Even use privately hosted AI models.
-- **Built-in RAG with AI Vector Search**: Create vector indexes over your documents declaratively and let Select AI handle embeddings, similarity search, and prompt augmentation for you.
+- **One in-database gateway to many LLMs**: Work with  AI models from OCI Generative AI, OpenAI, Azure OpenAI, Cohere, Anthropic, Amazon, and more via AI profiles, without rewriting your application logic. Easily switch between providers and models. Even use privately hosted AI models.
+- **Built-in RAG with AI Vector Search**: Use Select AI to automate creating vector indexes over your documents and performing the full RAG workflow.
 - **Secure, governed, and observable**: Keep data, security policies, and auditing in the database. Select AI uses existing roles, controls, and logging so your AI access is enterprise ready by design.
-- **Developer and data scientist friendly**: Use SQL, PL/SQL, and Python APIs to integrate AI into apps, analytics, and pipelines, no separate vector DB or AI control plane to run.
+- **Developer and data scientist friendly**: Use SQL, PL/SQL, and Python APIs to integrate AI into apps, analytics, and pipelines, no separate vector database or AI control plane to run.
 - **Lower TCO, faster insight**: Fewer moving parts, less glue code, and no cross system ETL for AI use cases means lower cost and faster time to value.
 
 
@@ -52,5 +52,5 @@ Note: You can minimize the menu by clicking '≡' to better interactive with the
 
 ## Acknowledgements
 - Author - Francis Regalado Database Product Manager
-- Contributors - David Start, Ley Sylvester 
+- Contributors - Mark Hornick
 - Last Updated By/Date - Francis Regalado, December 2025
