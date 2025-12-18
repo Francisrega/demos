@@ -195,6 +195,20 @@
             }
         }
 
+        /*landing / start over state: hide left panel and center chatbot */
+        body.landing #leftPanel {
+            display:none;
+        }
+        body.landing #mainGrid {
+            grid-template-columns: 1fr; /* single column*/
+            justify-items: center; /* center the remaining panel*/
+        }
+        
+        body.landing #rightPanel{
+            width: 100%;
+            max-width: 760px; /* optional makes it look centered*/
+        }
+
         .panel {
             background: #fff;
             border-radius: 8px;
@@ -357,6 +371,28 @@
             height: 400px;
             overflow-y: auto;
             background: #f9fafb
+        }
+        
+        /*hide by default*/
+        #chatIntroCta{
+            display:none;
+            margin-bottom:14px; /* spacing above the phone UI*/
+        }
+
+        body.landing #chatIntroCta {
+            display: block;
+        }
+
+        .chatbot-cta{
+            margin-top: 14px;
+            padding: 12px 14px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0c4a6e;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0284c7;
+            border-radius: 12px;
         }
 
         .message {
@@ -724,9 +760,9 @@
             <button id="btnReset" class="btn btn-danger" onclick="resetDemo()">🔄 Start Over</button>
         </div>
 
-        <div class="main-grid">
+        <div id="mainGrid" class="main-grid">
             <!-- Left Panel - Select AI Operations -->
-            <div class="panel">
+            <div id="leftPanel" class="panel">
                 <div class="panel-header">
                     <span>⚙️</span>
                     <span>Select AI Operations & Results</span>
@@ -766,9 +802,7 @@
                             <div class="intro-cta" style="margin-top: 16px; font-size: 13px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); color: #0c4a6e; border: 2px solid #0284c7;">
                                 Oracle Select AI helps you turn your database into a business answer engine - safe, simple, and cost-effective.
                             </div>
-                            <div class="intro-cta">
-                                👆 Click any demo button above to see Select AI in action!
-                            </div>
+
                         </div>
                     </div>
 
@@ -811,16 +845,24 @@
                         <table id="dataTable" class="data-table"></table>
                     </div>
                     
+                    <!-- ✅ Python Display (below response/table) -->
+                    <div id="pythonSection" style="display: none"></div>
+                        <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; margin-top: 16px">Python API:</div>
+                        <div id="pythonBox" class="query-box"></div>
                 </div>
             </div>
 
             <!-- Right Panel - Phone Interface -->
-            <div class="panel">
+            <div id="rightPanel" class="panel">
                 <div class="panel-header">
                     <span>📱</span>
                     <span>Example Chatbot Interface</span>
                 </div>
                 <div class="panel-content" style="padding: 20px">
+                    <!-- Landing-only CTA (shows on load + Start Over) -->
+                    <div id="chatIntroCta" class="intro-cta">
+                        👆 Click any demo button above to see Select AI in action!
+                    </div>
                     <div class="phone-container">
                         <div class="phone-screen">
                             <div class="chat-header">
@@ -847,7 +889,7 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div> 
                 </div>
             </div>
         </div>
@@ -875,6 +917,9 @@
             }
         }
 
+        function setLandingMode(isLanding) {
+            document.body.classList.toggle('landing', !!isLanding);
+        }
 
         function addMessage(text, isUser = false) {
             // Remove indentation after newlines so wrapped lines start at the left
@@ -943,9 +988,14 @@
             summary.querySelector('.results-text').textContent = message;
         }
 
-        function showQuery(sql) {
+        function showQuery(selectAiText) {
             document.getElementById('querySection').style.display = 'block';
-            document.getElementById('queryBox').textContent = sql;
+            document.getElementById('queryBox').textContent = selectAiText;
+        }
+
+        function showPython(pythonCode){
+            document.getElementById('pythonSection').style.display = 'block';
+            document.getElementById('pythonBox').textContent = pythonCode;
         }
 
         function showResponse(html) {
@@ -983,6 +1033,7 @@
         function demoNL2SQL() {
             resetDemo();
             hideIntro();
+            setLandingMode(false);
             currentDemo = 'nl2sql';
             document.getElementById('btnNL2SQL').classList.add('completed');
             setActiveStep('btnNL2SQL');
@@ -1004,10 +1055,14 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI Show me our top 5 customers by revenue this year.`;
+                    const selectAiQuery = `SELECT AI Show me our top 5 customers by revenue this year.`;
+                    const pythonCode = `import select_ai
+profile = select_ai.Profile(profile_name="my_oci_ai_profile")
+df = profile.run_sql(prompt="Show me our top 5 customers by revenue this year.")`;
 
-                  
-                    showQuery(sql);
+                    
+                    showQuery(selectAiQuery);
+                    showPython(pythonCode);
 
 
                     addMessage(
@@ -1044,6 +1099,7 @@
         function demoRAG() {
             resetDemo();
             hideIntro();
+            setLandingMode(false);
             currentDemo = 'rag';
             document.getElementById('btnRAG').classList.add('completed');
             setActiveStep('btnRAG');
@@ -1066,10 +1122,13 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI NARRATE What is our company data retention policy according to the compliance manual`;
-
+                    const selectAiQuery = `SELECT AI NARRATE What is our company data retention policy according to the compliance manual`;
+                    const pythonCode =`import select_ai
+profile = select_ai.Profile(profile_name="my_oci_ai_profile")
+df = profile.run_sql(prompt="What is our company data retention policy according to the compliance manual?") `;
                     
-                    showQuery(sql);
+                    showQuery(selectAiQuery);
+                    showPython(pythonCode);
                     
                     
                     addMessage("Based on your compliance documentation, here are the key data retention policies:");
@@ -1098,6 +1157,7 @@
         function demoChat() {
             resetDemo();
             hideIntro();
+            setLandingMode(false);
             currentDemo = 'chat';
             document.getElementById('btnChat').classList.add('completed');
             setActiveStep('btnChat');
@@ -1118,7 +1178,7 @@
                 setTimeout(() => {
                     removeTyping();
                     
-                    const sql = `SELECT AI CHAT Write a professional customer email announcing our new pricing plans.
+                    const selectAiQuery = `SELECT AI CHAT Write a professional customer email announcing our new pricing plans.
 Include
 - clear subject line
 - effective date: March 1, 2025
@@ -1127,8 +1187,20 @@ Include
 - link placeholder to pricing page
 - contact/account manager CTA
 - friendly, concise tone`;
+                    const pythonCode = `response = profile.chat(prompt =
+"""SELECT AI CHAT Write a professional customer email announcing our new pricing plans.
+    Include:
+    - clear subject line
+    - effective date: March 1, 2025
+    - summary of tier changes and volume discounts
+    - reassurance: existing customers keep current rate for 12 months
+    - link placeholder to pricing page
+    - contact/account manager CTA
+    - friendly, concise tone""")
+print(response)`;
                     
-                    showQuery(sql);
+                    showQuery(selectAiQuery);
+                    showPython(pythonCode);
                     
                     addMessage("I'll help you draft a professional email for your pricing announcement:");
                     
@@ -1147,6 +1219,7 @@ Include
         function demoAgent() {
             resetDemo();
             hideIntro();
+            setLandingMode(false);
             currentDemo = 'agent';
             document.getElementById('btnAgent').classList.add('completed');
             setActiveStep('btnAgent');
@@ -1170,7 +1243,7 @@ Include
                     removeTyping();
                     
                     // Show the SQL for the agent workflow
-                    const sql = `-- AI Agent Workflow: Churn Risk Analysis & Retention Campaign
+                    const selectAiQuery = `-- AI Agent Workflow: Churn Risk Analysis & Retention Campaign
 BEGIN
     -- Set the agent team that will handle this workflow
     DBMS_CLOUD_AI_AGENT.SET_TEAM(
@@ -1181,8 +1254,13 @@ END;
 
 -- Ask the agent team to analyze churn and build the campaign
 SELECT AI AGENT Analyze our customer churn risk and create a retention campaign for high-risk accounts.`;
-                    
-                    showQuery(sql);
+
+                    const pythonCode = `team = Team.fetch(tool_name="RETENTION_TEAM")
+res=team.run(prompt="Analyze our customer churn risk and create a retention campaign for high-risk accounts.")
+print(res)`;
+    
+                    showQuery(selectAiQuery);
+                    showPython(pythonCode);
                     
                     addMessage("I'll analyze customer churn risk and create a retention campaign. Let me work through this step by step:");
                     
@@ -1231,10 +1309,16 @@ SELECT AI AGENT Analyze our customer churn risk and create a retention campaign 
             document.getElementById('dataTableContainer').style.display = 'none';
             document.getElementById('responseSection').style.display = 'none';
             document.getElementById('responseBox').innerHTML = '';
+            document.getElementById('pythonSection').style.display = 'none';
+            document.getElementById('pythonBox').textContent = '';
+
 
             
             // Show intro section again
             showIntro();
+
+            // landing mode : hide left panel , center chatbot
+            setLandingMode(true);
             
             // Clear chat except initial message
             const chatMessages = document.getElementById('chatMessages');
@@ -1307,6 +1391,7 @@ SELECT AI AGENT Analyze our customer churn risk and create a retention campaign 
         // Initialize
         window.addEventListener('load', () => {
             updateFsButtonUI();
+            setLandingMode(true);
         });
     </script>
 </body>

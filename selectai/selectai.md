@@ -23,7 +23,7 @@ Note: You can minimize the menu by clicking '≡' to better interactive with the
 
 - **Ask About Sales Data (NL2SQL)**: See how Select AI converts a plain English requests like “Show me our top 5 customers by revenue this year” into an optimized SQL query, runs it, and returns a results table.
 - **Search Company Docs (RAG)**: Explore Retrieval Augmented Generation, where Select AI uses AI Vector Search to find relevant content in your private documents and then provides this content to your LLM to generate a contextually relevant response - reducing hallucinations and keeping answers grounded in your own policies and manuals.
-- **Generate Content (AI Chat)**: Use Select AI to draft business ready content (for example, a customer email about new pricing) via `DBMS_CLOUD_AI.GENERATE`, while still benefiting from database security, audit, and governance.
+- **Generate Content (AI Chat)**: Select AI provides general AI chat capabilities to your chosen LLM directly from your database, enabling intelligent conversations while maintaining context about your data and business.
 - **Automate Analysis (Agent)**: Watch an AI Agent orchestrate multi step workflows like analyzing churn risk, identifying at risk customers, and generating a retention campaign by chaining tasks and SQL calls declared from within the database.
 
 ### Key Benefits:
