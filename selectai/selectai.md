@@ -37,17 +37,17 @@ Note: You can minimize the menu by clicking '≡' to better interactive with the
 
 
 ## Learn More
-- **Select AI SQL generation & usage**: Use Select AI for Natural Language Interaction with your Database :
+- **Select AI SQL generation & usage**: Use Select AI for Natural Language Interaction with your Database : </br>
   https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/select-ai.html
 
-- **Supercharge SQL: Unleashing AI Queries with Oracle Autonomous Database Select AI**:
+- **Supercharge SQL: Unleashing AI Queries with Oracle Autonomous Database Select AI** : </br>
   https://blogs.oracle.com/machinelearning/supercharge-sql-unleashing-ai-queries-with-oracle-adb-select-ai
 
 
-- **6 Simple Tips for Better Text to SQL Generation using Oracle Autonomous Database Select AI**:  
+- **6 Simple Tips for Better Text to SQL Generation using Oracle Autonomous Database Select AI** :  </br>
   https://blogs.oracle.com/machinelearning/post/6-simple-tips-for-better-texttosql-generation-using-oracle-autonomous-database-select-ai
 
-- **Select AI Agent** : Build interactive and autonomous agents inside Autonomous AI Database, combining planning, tool use, reflection, and memory to deliver multi-turn workflows.: </br>
+- **Select AI Agent** : Build interactive and autonomous agents inside Autonomous AI Database, combining planning, tool use, reflection, and memory to deliver multi-turn workflows: </br>
   https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/select-ai-agent.html
 
 ## Acknowledgements
