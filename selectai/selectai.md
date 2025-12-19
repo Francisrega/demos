@@ -23,7 +23,7 @@ Note: You can minimize the menu by clicking '≡' to better interactive with the
 
 - **Ask About Sales Data (NL2SQL)**: See how Select AI converts a plain English requests like “Show me our top 5 customers by revenue this year” into an optimized SQL query, runs it, and returns a results table.
 - **Search Company Docs (RAG)**: Explore Retrieval Augmented Generation, where Select AI uses AI Vector Search to find relevant content in your private documents and then provides this content to your LLM to generate a contextually relevant response - reducing hallucinations and keeping answers grounded in your own policies and manuals.
-- **Generate Content (AI Chat)**: Select AI provides general AI chat capabilities to your chosen LLM directly from your database, enabling intelligent conversations that maintain context about your data and business.
+- **AI Chat**: Select AI provides general AI chat capabilities to your chosen LLM directly from your database, enabling intelligent conversations that maintain context about your data and business.
 - **Automate Analysis (Agent)**: Watch an AI Agent that your app developer created orchestrate multi step workflows like analyzing churn risk, identifying at risk customers, and generating a retention campaign by chaining tasks and SQL calls declared from within the database.
 
 ### Key Benefits:
@@ -42,7 +42,6 @@ Note: You can minimize the menu by clicking '≡' to better interactive with the
 
 - **Supercharge SQL: Unleashing AI Queries with Oracle Autonomous Database Select AI** : </br>
   https://blogs.oracle.com/machinelearning/supercharge-sql-unleashing-ai-queries-with-oracle-adb-select-ai
-
 
 - **6 Simple Tips for Better Text to SQL Generation using Oracle Autonomous Database Select AI** :  </br>
   https://blogs.oracle.com/machinelearning/post/6-simple-tips-for-better-texttosql-generation-using-oracle-autonomous-database-select-ai

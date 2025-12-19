@@ -1066,7 +1066,7 @@ df = profile.run_sql(prompt="Show me our top 3 customers by revenue this year.")
 
 
                     addMessage(
-                        "I've found your top 5 customers by revenue for 2025. Here are the results:<br><br>" +
+                        "I've found your top 3 customers by revenue for 2025. Here are the results:<br><br>" +
                         "<ol style='margin:0; padding-left:1.25rem;'>" +
                         "<li>Acme Corporation (Enterprise) - $2,847,392</li>" +
                         "<li>Global Tech Inc (Enterprise) - $2,341,893</li>" +
@@ -1221,7 +1221,7 @@ print(response)`;
             setActiveStep('btnAgent');
             
             updateModeIndicator('agent', '🤖 AI Agent', 
-                'Select AI Agents can autonomously perform complex tasks by combining multiple capabilities such as querying data, analyzing results, and taking actions based on your business rules. Developers have to define and create the AI agents that will be used. Developers will invoke the agent workflows via SQL, PL/SQL or Python APIs.');
+                'Select AI Agents can autonomously perform complex tasks by combining multiple capabilities such as querying data, analyzing results, and taking actions based on your business rules. Developers have to define and create the AI agents that will be used. Developers can invoke the agent workflows via SQL, PL/SQL or Python APIs.');
             
             updateValueCard([
                 'Automates complex multi-step workflows',
