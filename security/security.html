@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Oracle SQL Firewall - Protection Against SQL Injection</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+        min-height: 100vh;
+    }
+
+    .header { background: linear-gradient(to right, #0f766e, #115e59); color: #fff; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,.1) }
+    .header-content { max-width: 1400px; margin: 0 auto }
+    .header-title { display: flex; align-items: center; gap: 12px; margin-bottom: 8px }
+    .header-title h1 { font-size: 28px; font-weight: 700 }
+    .header-subtitle { color: #99f6e4; font-size: 14px }
+
+    .problem-banner { 
+        background: #fff3cd; 
+        border: 2px solid #ffc107; 
+        padding: 16px; 
+        border-radius: 8px; 
+        margin: 20px auto; 
+        max-width: 1400px; 
+        display: flex; 
+        align-items: center; 
+        gap: 12px 
+    }
+    .problem-icon { font-size: 24px }
+    .problem-text { font-size: 18px; color: #856404; font-weight: 600 }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px }
+    .button-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; align-items: center }
+
+    .btn { 
+        padding: 10px 20px; 
+        border-radius: 8px; 
+        border: none; 
+        font-size: 14px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: all .2s; 
+        min-height: 42px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none }
+    .btn.completed { background: #16a34a !important }
+    .btn.completed::before { content: '✓ '; font-weight: bold }
+
+    .btn-red { background: #dc2626 }
+    .btn-red:hover { background: #b91c1c }
+    .btn-blue { background: #2563eb }
+    .btn-blue:hover { background: #1e40af }
+    .btn-purple { background: #9333ea }
+    .btn-purple:hover { background: #7c3aed }
+    .btn-green { background: #16a34a }
+    .btn-green:hover { background: #15803d }
+    .btn-orange { background: #ea580c }
+    .btn-orange:hover { background: #c2410c }
+    .btn-gray { background: #6b7280 }
+    .btn-gray:hover { background: #4b5563 }
+
+    .main-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px }
+    @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr } }
+
+    .panel { background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,.1); overflow: hidden; display: flex; flex-direction: column }
+    .panel-header { background: #1f2937; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600 }
+    .panel-content { padding: 16px; flex: 1; overflow-y: auto }
+
+    .mode-indicator { 
+        background: #f0f9ff; 
+        border: 2px solid #0284c7; 
+        padding: 12px; 
+        border-radius: 6px; 
+        margin-bottom: 16px; 
+        display: none 
+    }
+    .mode-indicator.active { display: block }
+    .mode-indicator.vulnerable { background: #fee2e2; border-color: #dc2626 }
+    .mode-indicator.enabled { background: #dbeafe; border-color: #2563eb }
+    .mode-indicator.capturing { background: #f3e8ff; border-color: #9333ea }
+    .mode-indicator.protected { background: #d1fae5; border-color: #16a34a }
+    .mode-indicator.blocked { background: #fef3c7; border-color: #f59e0b }
+
+    .mode-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #111827 }
+    .mode-description { font-size: 13px; color: #6b7280 }
+
+    #animationCanvas { 
+        width: 100%; 
+        height: auto; 
+        aspect-ratio: 16/10; 
+        border: 1px solid #e5e7eb; 
+        border-radius: 8px; 
+        background: #1e293b;
+    }
+
+    .sql-box {
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        background: #f9fafb;
+        padding: 16px;
+        border-radius: 4px;
+        border: 1px solid #e5e7eb;
+        min-height: 120px;
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .results-summary {
+        background: #dcfce7;
+        border: 2px solid #22c55e;
+        padding: 12px;
+        border-radius: 6px;
+        margin: 12px 0;
+        display: none;
+    }
+    .results-summary.error { background: #fef2f2; border-color: #dc2626 }
+    .results-summary.success { background: #dcfce7; border-color: #22c55e }
+    .results-summary.warning { background: #fef3c7; border-color: #f59e0b }
+    .results-icon { font-size: 20px; margin-right: 8px; vertical-align: middle }
+    .results-text { font-size: 14px; font-weight: 600 }
+
+    .fullscreen-toggle {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 9999;
+        width: 46px;
+        height: 46px;
+        border: none;
+        border-radius: 10px;
+        background: #111827;
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform .15s ease, opacity .2s ease, background .2s ease;
+        opacity: .9;
+    }
+    .fullscreen-toggle:hover { transform: translateY(-1px); opacity: 1; background: #0b1220 }
+    .fullscreen-toggle svg { width: 22px; height: 22px; display: block; fill: currentColor }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-content">
+        <div class="header-title">
+            <span style="font-size: 32px;">🛡️</span>
+            <h1>Oracle SQL Firewall</h1>
+        </div>
+        <div class="header-subtitle">Built into Oracle AI Database 26ai — Real-time Protection Against SQL Injection Attacks</div>
+    </div>
+</div>
+
+<div class="problem-banner">
+    <span class="problem-icon">⚠️</span>
+    <div class="problem-text">"Traditional defenses fail to stop SQL injection attacks that bypass application controls and compromise sensitive data"</div>
+</div>
+
+<div class="container">
+    <div class="button-group">
+        <button class="btn btn-red" id="btnAttack" onclick="showAttack()">
+            <span>🎯</span> Show Attack
+        </button>
+        <button class="btn btn-blue" id="btnEnable" onclick="enableFirewall()" disabled>
+            <span>⚙️</span> Enable Firewall
+        </button>
+        <button class="btn btn-purple" id="btnCapture" onclick="captureTraffic()" disabled>
+            <span>📊</span> Capture SQL
+        </button>
+        <button class="btn btn-green" id="btnEnforce" onclick="enforcePolicy()" disabled>
+            <span>✅</span> Enforce Policy
+        </button>
+        <button class="btn btn-orange" id="btnBlock" onclick="blockAttack()" disabled>
+            <span>🚫</span> Block Attack
+        </button>
+        <button class="btn btn-gray" onclick="resetDemo()">
+            <span>↺</span> Reset
+        </button>
+    </div>
+
+    <div class="main-grid">
+        <!-- Left Panel: SQL & Results -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>📝</span>
+                <span>SQL Commands & Results</span>
+            </div>
+            <div class="panel-content">
+                <div id="modeIndicator" class="mode-indicator">
+                    <div class="mode-title">Ready to Begin</div>
+                    <div class="mode-description">Click "Show Attack" to see SQL injection in action</div>
+                </div>
+
+                <div class="sql-box" id="sqlLog">-- Oracle SQL Firewall Demo
+-- Protection Against SQL Injection Attacks
+-- Click "Show Attack" to begin</div>
+
+                <div id="resultsPanel" class="results-summary">
+                    <span class="results-icon">ℹ️</span>
+                    <span class="results-text">Ready to demonstrate SQL Firewall protection</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Visualization -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>🎬</span>
+                <span>Live Attack Flow Animation</span>
+            </div>
+            <div class="panel-content">
+                <canvas id="animationCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="fullscreen-toggle" id="fsToggle" title="Toggle Fullscreen (F)">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4h2V5h4V3zm6 0v2h4v4h2V5a2 2 0 0 0-2-2h-4zM3 15v4a2 2 0 0 0 2 2h4v-2H5v-4H3zm18 0h-2v4h-4v2h4a2 2 0 0 0 2-2v-4z"/></svg>
+</button>
+
+<script>
+/* ==============================
+   Canvas Setup
+   ============================== */
+const canvas = document.getElementById('animationCanvas');
+const ctx = canvas.getContext('2d');
+
+let currentMode = null;
+let animationFrame = null;
+let particles = [];
+let sqlPackets = [];
+let animationPhase = 0;
+
+function resizeCanvas() {
+    const parent = canvas.parentElement;
+    const rect = parent.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.width * 0.625; // 16:10 aspect ratio
+}
+
+/* ==============================
+   Animation Objects
+   ============================== */
+class SQLPacket {
+    constructor(x, y, text, isMalicious, targetX) {
+        this.x = x;
+        this.y = y;
+        this.startX = x;
+        this.targetX = targetX;
+        this.text = text;
+        this.isMalicious = isMalicious;
+        this.speed = 2.5;
+        this.alpha = 1;
+        this.reachedTarget = false;
+    }
+
+    update() {
+        if (!this.reachedTarget) {
+            const dx = this.targetX - this.x;
+            if (Math.abs(dx) > this.speed) {
+                this.x += Math.sign(dx) * this.speed;
+            } else {
+                this.x = this.targetX;
+                this.reachedTarget = true;
+            }
+        }
+    }
+
+    reset() {
+        this.x = this.startX;
+        this.reachedTarget = false;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        
+        const boxWidth = 120;
+        const boxHeight = 40;
+        ctx.fillStyle = this.isMalicious ? '#dc2626' : '#2563eb';
+        ctx.fillRect(this.x - boxWidth/2, this.y - boxHeight/2, boxWidth, boxHeight);
+        
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x - boxWidth/2, this.y - boxHeight/2, boxWidth, boxHeight);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y + 4);
+        
+        ctx.restore();
+    }
+}
+
+class Shield {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 60;
+        this.visible = false;
+        this.active = false;
+        this.pulsePhase = 0;
+        this.opacity = 0;
+        this.targetOpacity = 0;
+    }
+
+    update() {
+        // Fast fade in/out - much quicker transition
+        this.targetOpacity = this.visible ? 1 : 0;
+        if (Math.abs(this.opacity - this.targetOpacity) > 0.01) {
+            this.opacity += (this.targetOpacity - this.opacity) * 0.2; // Faster lerp
+        } else {
+            this.opacity = this.targetOpacity;
+        }
+
+        if (this.active) {
+            this.pulsePhase += 0.05;
+        }
+    }
+
+    draw() {
+        if (this.opacity <= 0.01) return;
+        
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        
+        // Shield glow
+        if (this.active) {
+            const glowSize = this.size + Math.sin(this.pulsePhase) * 10;
+            const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+            gradient.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+            gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(this.x - glowSize, this.y - glowSize, glowSize * 2, glowSize * 2);
+        }
+        
+        // Shield icon
+        ctx.fillStyle = this.active ? '#22c55e' : '#94a3b8';
+        ctx.font = `${this.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🛡️', this.x, this.y);
+        
+        ctx.restore();
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 4;
+        this.vy = (Math.random() - 0.5) * 4;
+        this.alpha = 1;
+        this.size = Math.random() * 3 + 2;
+        this.color = color;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= 0.02;
+        this.vy += 0.1;
+    }
+
+    draw() {
+        if (this.alpha <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+class DataPoint {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.baseY = y;
+        this.size = 3;
+        this.pulsePhase = Math.random() * Math.PI * 2;
+    }
+
+    update() {
+        this.pulsePhase += 0.05;
+        this.y = this.baseY + Math.sin(this.pulsePhase) * 5;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.fillStyle = '#9333ea';
+        ctx.globalAlpha = 0.6 + Math.sin(this.pulsePhase) * 0.3;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+/* ==============================
+   Drawing Functions
+   ============================== */
+let shield = null;
+let dataPoints = [];
+
+function drawArchitecture() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const w = canvas.width;
+    const h = canvas.height;
+    
+    // Grid background
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+    }
+    for (let y = 0; y < h; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+    }
+    
+    const layerY = h / 2;
+    const spacing = w / 5;
+    
+    // Draw layers
+    drawLayer(spacing, layerY, '👤', 'Client', '#3b82f6', currentMode === 'attack');
+    drawLayer(spacing * 2, layerY, '🖥️', 'Application', '#f59e0b', false);
+    
+    // Shield
+    if (shield) {
+        shield.update();
+        shield.draw();
+    }
+    
+    drawLayer(spacing * 4, layerY, '🗄️', 'Database', 
+        (currentMode === 'protected' || currentMode === 'blocked') ? '#22c55e' : '#6366f1',
+        currentMode === 'attack');
+    
+    // Flow arrows
+    drawArrow(spacing, layerY, spacing * 2, layerY, '#94a3b8');
+    
+    if (currentMode === 'enabled' || currentMode === 'capturing' || currentMode === 'protected' || currentMode === 'blocked') {
+        drawArrow(spacing * 2, layerY, spacing * 3, layerY, '#94a3b8');
+        if (currentMode !== 'blocked') {
+            drawArrow(spacing * 3, layerY, spacing * 4, layerY, '#94a3b8');
+        }
+    } else {
+        drawArrow(spacing * 2, layerY, spacing * 4, layerY, '#94a3b8');
+    }
+    
+    // SQL Packets
+    sqlPackets.forEach(packet => {
+        packet.update();
+        packet.draw();
+    });
+    
+    // Data points for capturing mode
+    if (currentMode === 'capturing') {
+        dataPoints.forEach(point => {
+            point.update();
+            point.draw();
+        });
+    }
+    
+    // Particles
+    particles = particles.filter(p => p.alpha > 0);
+    particles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+}
+
+function drawLayer(x, y, icon, label, color, isActive) {
+    ctx.save();
+    
+    const boxSize = 80;
+    ctx.fillStyle = isActive ? color : 'rgba(255, 255, 255, 0.05)';
+    ctx.fillRect(x - boxSize/2, y - boxSize/2, boxSize, boxSize);
+    
+    ctx.strokeStyle = color;
+    ctx.lineWidth = isActive ? 3 : 2;
+    ctx.strokeRect(x - boxSize/2, y - boxSize/2, boxSize, boxSize);
+    
+    ctx.font = '32px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(icon, x, y - 5);
+    
+    ctx.fillStyle = '#f1f5f9';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText(label, x, y + boxSize/2 + 15);
+    
+    ctx.restore();
+}
+
+function drawArrow(x1, y1, x2, y2, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const arrowSize = 8;
+    
+    ctx.beginPath();
+    ctx.moveTo(x1 + 50, y1);
+    ctx.lineTo(x2 - 50, y2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(x2 - 50, y2);
+    ctx.lineTo(x2 - 50 - arrowSize * Math.cos(angle - Math.PI/6), 
+               y2 - arrowSize * Math.sin(angle - Math.PI/6));
+    ctx.lineTo(x2 - 50 - arrowSize * Math.cos(angle + Math.PI/6), 
+               y2 - arrowSize * Math.sin(angle + Math.PI/6));
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.restore();
+}
+
+function animateLoop() {
+    animationPhase++;
+    
+    // Continuous packet spawning for attack mode
+    if (currentMode === 'attack' && animationPhase % 90 === 0) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const spacing = w / 5;
+        const packet = new SQLPacket(spacing, h/2, "' OR '1'='1", true, spacing * 4);
+        sqlPackets.push(packet);
+        
+        if (sqlPackets.length > 3) {
+            const oldPacket = sqlPackets.shift();
+            for (let i = 0; i < 20; i++) {
+                particles.push(new Particle(spacing * 4, h/2, '#dc2626'));
+            }
+        }
+    }
+    
+    // Continuous packet spawning for enabled mode
+    if (currentMode === 'enabled' && animationPhase % 100 === 0) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const spacing = w / 5;
+        const packet = new SQLPacket(spacing, h/2, "SELECT *", false, spacing * 3);
+        sqlPackets.push(packet);
+        
+        if (sqlPackets.length > 2) {
+            sqlPackets.shift();
+        }
+    }
+    
+    // Continuous packet spawning for capturing mode
+    if (currentMode === 'capturing' && animationPhase % 80 === 0) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const spacing = w / 5;
+        const packet = new SQLPacket(spacing, h/2, "INSERT INTO", false, spacing * 3);
+        sqlPackets.push(packet);
+        
+        if (sqlPackets.length > 2) {
+            const oldPacket = sqlPackets.shift();
+            for (let i = 0; i < 5; i++) {
+                dataPoints.push(new DataPoint(
+                    spacing * 3 + (Math.random() - 0.5) * 40,
+                    h/2 + (Math.random() - 0.5) * 40
+                ));
+            }
+            if (dataPoints.length > 30) {
+                dataPoints = dataPoints.slice(-30);
+            }
+        }
+    }
+    
+    // Continuous packet spawning for protected mode
+    if (currentMode === 'protected' && animationPhase % 110 === 0) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const spacing = w / 5;
+        const packet = new SQLPacket(spacing, h/2, "UPDATE users", false, spacing * 4);
+        sqlPackets.push(packet);
+        
+        if (sqlPackets.length > 2) {
+            sqlPackets.shift();
+        }
+    }
+    
+    drawArchitecture();
+    animationFrame = requestAnimationFrame(animateLoop);
+}
+
+/* ==============================
+   Demo Functions
+   ============================== */
+function showAttack() {
+    currentMode = 'attack';
+    sqlPackets = [];
+    dataPoints = [];
+    animationPhase = 0;
+    
+    document.getElementById('modeIndicator').className = 'mode-indicator vulnerable active';
+    document.getElementById('modeIndicator').innerHTML = `
+        <div class="mode-title">🎯 SQL Injection Attack</div>
+        <div class="mode-description">Malicious SQL bypasses application and compromises database</div>
+    `;
+
+    document.getElementById('sqlLog').textContent = `-- ⚠️ VULNERABLE: No SQL Firewall Protection
+
+-- Normal login query:
+SELECT * FROM users 
+WHERE username = 'john.doe' 
+  AND password = 'hash123';
+
+-- ❌ Attacker input: admin' OR '1'='1' --
+-- Resulting malicious query:
+
+SELECT * FROM users 
+WHERE username = 'admin' OR '1'='1' --' 
+  AND password = 'anything';
+
+-- Attack successful! 
+-- Bypassed authentication without password
+-- Database compromised`;
+
+    document.getElementById('resultsPanel').className = 'results-summary error';
+    document.getElementById('resultsPanel').style.display = 'block';
+    document.getElementById('resultsPanel').innerHTML = `
+        <span class="results-icon">🚨</span>
+        <span class="results-text">Attack Successful — Database Compromised! Unauthorized admin access granted.</span>
+    `;
+
+    document.getElementById('btnAttack').classList.add('completed');
+    document.getElementById('btnEnable').disabled = false;
+}
+
+function enableFirewall() {
+    currentMode = 'enabled';
+    sqlPackets = [];
+    dataPoints = [];
+    animationPhase = 0;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const spacing = w / 5;
+    
+    if (!shield) {
+        shield = new Shield(spacing * 3, h/2);
+    }
+    shield.visible = true;
+    shield.active = false;
+
+    document.getElementById('modeIndicator').className = 'mode-indicator enabled active';
+    document.getElementById('modeIndicator').innerHTML = `
+        <div class="mode-title">⚙️ SQL Firewall Enabled</div>
+        <div class="mode-description">Kernel-resident firewall is now active and monitoring traffic</div>
+    `;
+
+    document.getElementById('sqlLog').textContent = `-- Step 1: Enable SQL Firewall
+
+GRANT SQL_FIREWALL_ADMIN TO security_admin;
+EXEC DBMS_SQL_FIREWALL.ENABLE;
+
+-- ✅ SQL Firewall enabled
+-- Kernel-resident architecture
+-- Sees ALL database traffic
+-- 1-1.5% CPU overhead
+-- Now monitoring all SQL statements`;
+
+    document.getElementById('resultsPanel').className = 'results-summary success';
+    document.getElementById('resultsPanel').innerHTML = `
+        <span class="results-icon">✅</span>
+        <span class="results-text">Firewall Active — Monitoring all SQL traffic through the database kernel</span>
+    `;
+
+    document.getElementById('btnEnable').classList.add('completed');
+    document.getElementById('btnCapture').disabled = false;
+}
+
+function captureTraffic() {
+    currentMode = 'capturing';
+    sqlPackets = [];
+    dataPoints = [];
+    animationPhase = 0;
+
+    document.getElementById('modeIndicator').className = 'mode-indicator capturing active';
+    document.getElementById('modeIndicator').innerHTML = `
+        <div class="mode-title">📊 Capturing SQL Traffic</div>
+        <div class="mode-description">Learning legitimate SQL patterns from normal operations</div>
+    `;
+
+    document.getElementById('sqlLog').textContent = `-- Step 2: Capture Allowed SQL
+
+EXEC DBMS_SQL_FIREWALL.CREATE_CAPTURE(
+    username => 'APPUSER',
+    start_capture => TRUE
+);
+
+-- Learning period: 24-48 hours
+-- Capturing SQL signatures...
+-- Recording execution contexts...
+-- Building allow-list...
+
+EXEC DBMS_SQL_FIREWALL.STOP_CAPTURE('APPUSER');
+EXEC DBMS_SQL_FIREWALL.GENERATE_ALLOW_LIST('APPUSER');
+
+-- ✅ Captured 847 SQL signatures
+-- ✅ Allow-list created`;
+
+    document.getElementById('resultsPanel').className = 'results-summary success';
+    document.getElementById('resultsPanel').innerHTML = `
+        <span class="results-icon">📊</span>
+        <span class="results-text">Learning Complete — 847 legitimate SQL patterns captured and added to allow-list</span>
+    `;
+
+    document.getElementById('btnCapture').classList.add('completed');
+    document.getElementById('btnEnforce').disabled = false;
+}
+
+function enforcePolicy() {
+    currentMode = 'protected';
+    sqlPackets = [];
+    dataPoints = [];
+    animationPhase = 0;
+    
+    // Immediately activate shield - no delay
+    if (shield) {
+        shield.active = true;
+        shield.pulsePhase = 0; // Reset pulse for immediate effect
+    }
+
+    document.getElementById('modeIndicator').className = 'mode-indicator protected active';
+    document.getElementById('modeIndicator').innerHTML = `
+        <div class="mode-title">✅ Policy Enforced</div>
+        <div class="mode-description">Only allowed SQL can execute — violations logged and blocked</div>
+    `;
+
+    document.getElementById('sqlLog').textContent = `-- Step 3: Enforce SQL Firewall Policy
+
+EXEC DBMS_SQL_FIREWALL.ENABLE_ALLOW_LIST(
+    username => 'APPUSER',
+    enforce => DBMS_SQL_FIREWALL.ENFORCE_SQL,
+    block => TRUE
+);
+
+-- ✅ Policy active
+-- ✅ 847 SQL signatures allowed
+-- ✅ Violations logged to audit trail
+-- ✅ Blocking mode: ON
+-- ✅ Protection enabled
+
+SELECT * FROM DBA_SQL_FIREWALL_ALLOWED_SQL
+WHERE username = 'APPUSER';`;
+
+    document.getElementById('resultsPanel').className = 'results-summary success';
+    document.getElementById('resultsPanel').innerHTML = `
+        <span class="results-icon">🛡️</span>
+        <span class="results-text">Protection Active — Database secured with allow-list enforcement</span>
+    `;
+
+    document.getElementById('btnEnforce').classList.add('completed');
+    document.getElementById('btnBlock').disabled = false;
+}
+
+function blockAttack() {
+    currentMode = 'blocked';
+    sqlPackets = [];
+    dataPoints = [];
+    animationPhase = 0;
+
+    document.getElementById('modeIndicator').className = 'mode-indicator blocked active';
+    document.getElementById('modeIndicator').innerHTML = `
+        <div class="mode-title">🚫 Attack Blocked</div>
+        <div class="mode-description">SQL Firewall detected and blocked unauthorized SQL</div>
+    `;
+
+    document.getElementById('sqlLog').textContent = `-- 🚫 SQL Injection BLOCKED by Firewall
+
+-- Attacker tries: admin' OR '1'='1' --
+
+-- SQL Firewall Analysis:
+-- 1. Parses SQL statement
+-- 2. Computes signature
+-- 3. Checks against allow-list
+-- 4. ❌ NOT FOUND in allow-list
+-- 5. Violation logged
+-- 6. Statement BLOCKED
+
+ORA-47605: SQL Firewall violation
+
+-- ✅ Attack prevented
+-- ✅ Database secure
+-- ✅ Zero data exposure`;
+
+    document.getElementById('resultsPanel').className = 'results-summary warning';
+    document.getElementById('resultsPanel').innerHTML = `
+        <span class="results-icon">🛡️</span>
+        <span class="results-text">Attack Blocked! Malicious SQL detected and stopped before execution — ORA-47605</span>
+    `;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const spacing = w / 5;
+    
+    const packet = new SQLPacket(spacing, h/2, "BLOCKED!", true, spacing * 3);
+    sqlPackets.push(packet);
+    
+    setTimeout(() => {
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle(spacing * 3, h/2, '#f59e0b'));
+        }
+    }, 800);
+
+    document.getElementById('btnBlock').classList.add('completed');
+}
+
+function resetDemo() {
+    currentMode = null;
+    sqlPackets = [];
+    dataPoints = [];
+    particles = [];
+    animationPhase = 0;
+    
+    if (shield) {
+        shield.visible = false;
+        shield.active = false;
+    }
+
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.classList.remove('completed');
+    });
+
+    document.getElementById('btnEnable').disabled = true;
+    document.getElementById('btnCapture').disabled = true;
+    document.getElementById('btnEnforce').disabled = true;
+    document.getElementById('btnBlock').disabled = true;
+
+    document.getElementById('modeIndicator').className = 'mode-indicator';
+    document.getElementById('modeIndicator').innerHTML = `
+        <div class="mode-title">Ready to Begin</div>
+        <div class="mode-description">Click "Show Attack" to see SQL injection in action</div>
+    `;
+
+    document.getElementById('sqlLog').textContent = `-- Oracle SQL Firewall Demo
+-- Protection Against SQL Injection Attacks
+-- Click "Show Attack" to begin`;
+
+    document.getElementById('resultsPanel').className = 'results-summary';
+    document.getElementById('resultsPanel').style.display = 'none';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ==============================
+   Fullscreen Toggle
+   ============================== */
+const fsBtn = document.getElementById('fsToggle');
+
+function isFullscreen() {
+    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+}
+
+async function enterFullscreen() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) return elem.requestFullscreen();
+    if (elem.webkitRequestFullscreen) return elem.webkitRequestFullscreen();
+    if (elem.msRequestFullscreen) return elem.msRequestFullscreen();
+}
+
+async function exitFullscreen() {
+    if (document.exitFullscreen) return document.exitFullscreen();
+    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+    if (document.msExitFullscreen) return document.msExitFullscreen();
+}
+
+function updateFsButtonUI() {
+    const active = isFullscreen();
+    fsBtn.innerHTML = active
+        ? '<svg viewBox="0 0 24 24"><path d="M9 7H5v4H3V5a2 2 0 0 1 2-2h6v2H9zm6-2h6a2 2 0 0 1 2 2v6h-2V9h-4V7zM3 13h2v4h4v2H5a2 2 0 0 1-2-2v-4zm18 0v4a2 2 0 0 1-2 2h-4v-2h4v-4h2z"/></svg>'
+        : '<svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4h2V5h4V3zm6 0v2h4v4h2V5a2 2 0 0 0-2-2h-4zM3 15v4a2 2 0 0 0 2 2h4v-2H5v-4H3zm18 0h-2v4h-4v2h4a2 2 0 0 0 2-2v-4z"/></svg>';
+}
+
+fsBtn.addEventListener('click', async () => {
+    try {
+        if (!isFullscreen()) await enterFullscreen();
+        else await exitFullscreen();
+    } catch (e) { console.warn('Fullscreen failed:', e); }
+});
+
+document.addEventListener('fullscreenchange', updateFsButtonUI);
+document.addEventListener('webkitfullscreenchange', updateFsButtonUI);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+            fsBtn.click();
+        }
+    }
+});
+
+/* ==============================
+   Initialize
+   ============================== */
+let resizeTimeout;
+window.addEventListener('load', () => {
+    resizeCanvas();
+    updateFsButtonUI();
+    animateLoop();
+});
+
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(resizeCanvas, 100);
+});
+</script>
+</body>
+</html>
