@@ -135,7 +135,6 @@ For comprehensive protection, both can be used together. SQL Firewall is include
 - [Oracle SQL Firewall Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/23/dbseg/using-oracle-sql-firewall.html)
 - [Oracle Data Safe SQL Firewall](https://docs.oracle.com/en-us/iaas/data-safe/doc/sql-firewall.html)
 - [LiveLabs SQL Firewall Workshop](https://livelabs.oracle.com/pls/apex/f?p=133:100:::::SEARCH:sql%20firewall)
-- [SQL Injection Mitigation Technical Report](https://www.oracle.com/a/ocom/docs/database/oracle-database-sql-firewall.pdf)
 - [Always Free Autonomous Database](https://www.oracle.com/autonomous-database/free-trial/)
 - [Oracle AI Database Free](https://www.oracle.com/database/free/get-started/)
 
