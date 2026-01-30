@@ -13,7 +13,7 @@ SQL injection remains one of the most critical database security threats, consis
 ### **Try the Interactive Demo**
 Note: You can minimize the menu by clicking '≡' to better interact with the demo.
 
-<iframe src="../sql-firewall.html" width="100%" height="1100px" frameborder="0" style="min-width: 100%; min-height: 1100px; height: 1100px !important;" ></iframe>
+<iframe src="../security.html" width="100%" height="1100px" frameborder="0" style="min-width: 100%; min-height: 1100px; height: 1100px !important;" ></iframe>
 
 ###  
 ### 
