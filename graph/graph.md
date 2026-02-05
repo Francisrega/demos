@@ -2,7 +2,7 @@
 
 ## About Oracle AI Database Graph
 
-**Oracle AI Database Graph** enables you to uncover insights from relationships within large datasets by analyzing how entities are connected, not just the entities themselves. Traditional relational databases excel at storing data in tables and rows, but struggle when you need to traverse complex networks of relationships like fraud rings, recommendation networks, supply chain dependencies, or social connections.
+**Oracle AI Database Graph** enables you to uncover insights from relationships within large datasets by analyzing how entities are connected, not just as standalone entities. Relational databases excel at storing data in tables and rows, but are not intuitive when you need to traverse complex networks of relationships like fraud rings, recommendation networks, supply chain dependencies, or social connections.
 
 Graph technology in Oracle AI Database treats relationships as first-class citizens. You can ask questions like "find all accounts receiving money from a suspicious person through 1 to 3 intermediaries" or "what's the shortest path between two entities" and get answers in milliseconds, not hours. The graph is derived directly from your existing relational tables with no data duplication, so inserts, updates, and deletes are instantly reflected across both views.
 
@@ -20,15 +20,15 @@ Note: You can minimize the menu by clicking '≡' to better interact with the de
 
 ### What You'll Discover:
 
-- **The Problem with Traditional SQL**: See how finding accounts 1-3 hops away from a suspicious person requires complex nested JOINs that become unwieldy and perform poorly as relationships deepen.
+- **The Problem with Tracing Relationships with Tables**: See how finding accounts 1-3 hops away from a suspicious person requires complex nested JOINs that become unwieldy and perform poorly as relationships deepen.
 - **Create a Property Graph**: Watch how a graph view is created from existing ACCOUNTS and TRANSACTIONS tables with no data copy, just a new perspective on the same data.
-- **Graph Query Power**: Execute a simple pattern-matching query that traverses 1 to 3 hops instantly, finding all connected accounts in the money flow network where traditional SQL struggles.
-- **Fraud Ring Detection**: Use built-in graph analytics to automatically detect circular money flow patterns (fraud rings) that would be nearly impossible to identify with standard SQL.
+- **Graph Query Power**: Execute a simple pattern-matching query that traverses 1 to 3 hops instantly, finding all connected accounts in the money flow network, difficult to do without graph syntax in SQL.
+- **Fraud Ring Detection**: Use simple graph syntax in SQL to automatically detect circular money flow patterns (fraud rings) that would be nearly impossible otherwise.
 - **Real-time Visualization**: See the transaction network come alive with nodes (people and accounts) and edges (transfers and ownership) highlighted as queries execute.
 
 ### Key Benefits:
 
-- **Relationship-First Analysis**: Query and analyze data where connections between entities are just as important as the entities themselves, enabling pattern detection impossible with traditional SQL.
+- **Relationship-First Analysis**: Query and analyze data where connections between entities are just as important as the entities themselves, enabling pattern detection impossible without using graphs.
 - **No Data Duplication**: Graph is a view derived from existing relational tables, so all changes are instantly reflected across both perspectives with no ETL or sync jobs.
 - **SQL:2023 Standard**: Use familiar SQL syntax with new GRAPH_TABLE and MATCH clauses for pattern matching, making graph queries accessible to anyone who knows SQL.
 - **Built-in Analytics**: Leverage powerful algorithms for PageRank, community detection, shortest path, centrality, and cycle detection without writing complex code.
@@ -38,11 +38,11 @@ Note: You can minimize the menu by clicking '≡' to better interact with the de
 
 ### The Challenge Oracle Graph Solves:
 
-Everything is connected, but traditional relational databases struggle with:
+Everything is connected, but relational-only databases struggle with:
 
 **Complex Relationships**: Questions like "find all people connected within 3 degrees of separation" or "what's the shortest path between two entities" require traversing millions of relationships in milliseconds through a data structure not optimized for following connections.
 
-**Network and Pattern Analysis**: Discovery of patterns like fraud rings, recommendation networks, supply chain dependencies, or social influence patterns are nearly impossible to detect with standard SQL queries. Each additional "hop" in traditional SQL requires another layer of JOINs, causing exponential performance degradation.
+**Network and Pattern Analysis**: Discovery of patterns like fraud rings, recommendation networks, supply chain dependencies, or social influence patterns are nearly impossible to detect without graph syntax in SQL. Each additional "hop" would require another layer of JOINs.
 
 **Real-time Traversals**: Business scenarios demand instant answers to relationship questions, but traditional approaches force you to either denormalize data (losing integrity) or accept poor performance as relationships deepen.
 
@@ -56,7 +56,7 @@ Oracle Graph technology models data as entities (vertices) and relationships (ed
 
 ### Advanced Capabilities:
 
-**Graph Analytics**: Oracle Graph Server provides high-performance, in-memory parallel algorithms for pattern detection, influence analysis, and predictive modeling on massive datasets.
+**Graph Analytics**: Oracle Graph Server provides high-performance, in-memory parallel graph algorithms for pattern detection, influence analysis, and predictive modeling on massive datasets.
 
 **Knowledge Graphs and AI**: Combine semantic search with knowledge graphs for precise results. An ontology (expert-curated knowledge graph) enables Graph RAG - using relationship context to improve AI search accuracy and reduce hallucinations.
 
@@ -76,5 +76,5 @@ Oracle Graph technology models data as entities (vertices) and relationships (ed
 ## Acknowledgements
 
 - Author — Francis Regalado, Database Product Manager
-- Contributors — 
-- Last Updated By/Date — Francis Regalado, January 2026
+- Contributors — Melliyal Annamalai
+- Last Updated By/Date — Francis Regalado, February 2026
