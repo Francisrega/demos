@@ -31,12 +31,10 @@ Note: You can minimize the menu by clicking '≡' to better interact with the de
 
 ## Learn More
 
-- Oracle AI Database Documentation: https://docs.oracle.com/en/database/oracle/oracle-database/
-- Oracle AI Vector Search: https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/
-- Private Agent Factory Workshop: livelabs.oracle.com
+- Private Agent Factory:  https://docs.oracle.com/en/database/oracle/agent-factory/25.3/paias/introduction.html
 
 ## Acknowledgements
 
 - Author — Francis Regalado, Database Product Manager
-- Contributors — Oracle AI Database Team
+- Contributors — 
 - Last Updated By/Date — Francis Regalado, February 2026
