@@ -109,4 +109,4 @@ Oracle Globally Distributed Database is supercharged when deployed on Exascale i
 
 - **Author**: Francis Regalado, Database Product Manager
 - **Contributors**: 
-- **Last Updated**: February 2026
+- **Last Updated**: Francis Regalado, February 2026

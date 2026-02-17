@@ -2,7 +2,7 @@
 
 ## About Oracle True Cache
 
-Oracle True Cache is a built-in, in-memory caching service that runs inside the Oracle AI Database, eliminating the need for external cache systems such as Redis or Memcached. Unlike traditional mid-tier caches that introduce stale data risks and operational complexity, True Cache stays transactionally consistent with the underlying database through Oracle's proven redo technology — the same mechanism that powers Data Guard. Applications get microsecond read latency with zero code changes, while writes continue flowing to the authoritative primary database for full durability.
+Oracle True Cache is a built-in, in-memory caching service that runs inside the Oracle AI Database, eliminating the need for external cache systems such as Redis or Memcached. Unlike traditional mid-tier caches that introduce stale data risks and operational complexity, True Cache stays transactionally consistent with the underlying database through Oracle's proven redo technology, the same mechanism that powers Data Guard. Applications get microsecond read latency with zero code changes, while writes continue flowing to the authoritative primary database for full durability.
 
 **The Challenge**: High-traffic applications suffer from slow database round-trips on repeated reads, yet every traditional caching solution introduces its own set of problems: stale data, manual invalidation logic, separate skill sets, and security gaps. Developers are forced to choose between performance and consistency, but they should not have to.
 
@@ -15,14 +15,14 @@ Oracle True Cache is a built-in, in-memory caching service that runs inside the 
 ### How It Works:
 - **Reads** are served directly from True Cache memory at microsecond speed
 - **Writes** go to the primary Oracle AI Database for durability and consistency
-- **Redo synchronisation** propagates every committed change from the primary to True Cache automatically — no manual invalidation, no TTL tuning
+- **Redo synchronisation** propagates every committed change from the primary to True Cache automatically - no manual invalidation, no TTL tuning
 
 ### Key Capabilities:
 - Automatic data synchronisation using Oracle AI Database redo technology
-- No application changes required — works transparently with existing SQL queries
+- No application changes required, works transparently with existing SQL queries
 - Ultra-low latency reads: microsecond-level response times from memory
-- No data stored on disk by default — qualifies as a data-processing tier under data residency regulations
-- Optionally overflow to disk when memory is full — still faster than the back-end database
+- No data stored on disk by default, qualifies as a data-processing tier under data residency regulations
+- Optionally overflow to disk when memory is full, still faster than the back-end database
 
 ### **Try the Interactive Demo**
 Note: You can minimize the menu by clicking '≡' to better interact with the demo.
@@ -36,15 +36,15 @@ Note: You can minimize the menu by clicking '≡' to better interact with the de
 
 - **The Problem**: Visualize how every read request travels all the way to the back-end database, creating latency bottlenecks and CPU exhaustion at high traffic volumes.
 
-- **Cache Pitfalls**: See how traditional mid-tier caches (Redis, Memcached, object caches) create a dangerous tradeoff — fast reads but stale data. Watch the write path bypass the cache entirely while the cache continues serving outdated values.
+- **Cache Pitfalls**: See how traditional mid-tier caches (Redis, Memcached, object caches) create a dangerous tradeoff, fast reads but stale data. Watch the write path bypass the cache entirely while the cache continues serving outdated values.
 
-- **True Cache Introduced**: Experience the three-node architecture — Application, True Cache, and Primary DB — where reads are intercepted by True Cache at microsecond speed while writes still flow to the authoritative source.
+- **True Cache Introduced**: Experience the three-node architecture - Application, True Cache, and Primary DB, where reads are intercepted by True Cache at microsecond speed while writes still flow to the authoritative source.
 
 - **Always Fresh Data**: Watch Oracle's redo technology in action. Every commit on the primary instantly propagates to True Cache via the golden redo stream, ensuring applications always receive correct, up-to-date data without any application-side invalidation logic.
 
-- **Scale Out**: Discover how multiple True Cache instances can be deployed simultaneously — each receiving the same redo stream — to serve different teams (HR, Sales, Finance) with their own warmed data sets and to aggregate memory capacity for larger working sets.
+- **Scale Out**: Discover how multiple True Cache instances can be deployed simultaneously, each receiving the same redo stream to serve different teams (HR, Sales, Finance) with their own warmed data sets and to aggregate memory capacity for larger working sets.
 
-- **Go Closer**: See how True Cache can be deployed geographically near the application — in the same region, edge location, or data centre — serving reads locally at microsecond speed while the authoritative primary database remains centralised.
+- **Go Closer**: See how True Cache can be deployed geographically near the application in the same region, edge location, or data centre, serving reads locally at microsecond speed while the authoritative primary database remains centralised.
 
 - **Business Value**: Explore real customer workloads running on True Cache today, from stock exchange ticker feeds to fraud detection AI inferencing to core banking offload.
 
@@ -55,7 +55,7 @@ A **built-in caching service** that runs inside the Oracle AI Database, eliminat
 ### Core Properties:
 
 **Automatic data synchronisation:**
-Keeps cached data transactionally consistent with the underlying database, so applications always read fresh, correct data. Synchronisation uses Oracle AI Database redo technology — the same proven mechanism behind Data Guard — ensuring automatic refresh with no manual invalidation and consistency maintained across everything related to cached data.
+Keeps cached data transactionally consistent with the underlying database, so applications always read fresh, correct data. Synchronisation uses Oracle AI Database redo technology, the same proven mechanism behind Data Guard, ensuring automatic refresh with no manual invalidation and consistency maintained across everything related to cached data.
 
 **No application changes required:**
 Works transparently with existing SQL queries and applications. There is no API to learn, no client library to install, and no query rewriting needed.
@@ -76,7 +76,7 @@ High-end applications often configure mid-tier caches to improve response times 
 - **Who owns the invalidation logic?** Every write path in the application must be audited and updated to keep the cache coherent.
 - **What about security?** Data that leaves the Oracle Database loses the security controls, auditing, and encryption that come with it.
 
-Many of these questions make mid-tier caches deliver very limited positive results in practice — and carry real business risk when stale data reaches end users.
+Many of these questions make mid-tier caches deliver very limited positive results in practice and carry real business risk when stale data reaches end users.
 
 **True Cache eliminates all of these concerns** by making the cache an integral, consistent part of Oracle AI Database itself.
 
@@ -105,13 +105,13 @@ A single True Cache instance already delivers significant read offload. For even
 ### Deployment Options:
 
 **Higher availability:**
-Read requests are distributed across instances. The failure of one True Cache instance does not interrupt read availability — other instances continue serving requests.
+Read requests are distributed across instances. The failure of one True Cache instance does not interrupt read availability, other instances continue serving requests.
 
 **Cache larger data sets:**
 Aggregate memory across multiple True Cache nodes to hold the entire working set in memory. Each instance can be sized independently based on the data it serves.
 
 **Group isolation:**
-Different True Cache instances can be configured to serve different application groups. An HR application can warm its own data set in one instance while a Sales application does the same in another — providing predictable performance and preventing workload interference.
+Different True Cache instances can be configured to serve different application groups. An HR application can warm its own data set in one instance while a Sales application does the same in another, providing predictable performance and preventing workload interference.
 
 **Overflow to disk:**
 Optionally, True Cache can overflow data to local disk when memory is full. This is still significantly faster than accessing the back-end primary database, extending the effective cache size beyond available RAM.
@@ -128,10 +128,10 @@ For use cases involving data residency requirements, user proximity, or device p
 True Cache deployed in the same region or data centre as the application eliminates wide-area network latency from the read path entirely. Reads are served locally at memory speed.
 
 **Data residency compliance:**
-True Cache does not store any data on disk by default. This means it functions as a pure data-processing tier — one that data residency regulations typically allow to exist in proximity to users, even when the primary database must remain in a specific jurisdiction.
+True Cache does not store any data on disk by default. This means it functions as a pure data-processing tier, one that data residency regulations typically allow to exist in proximity to users, even when the primary database must remain in a specific jurisdiction.
 
 **Transparent cache warming:**
-When a True Cache instance near the user does not yet have a requested object in memory (a cache miss), it fetches the data silently from the primary database and warms up — completely transparently to the application.
+When a True Cache instance near the user does not yet have a requested object in memory (a cache miss), it fetches the data silently from the primary database and warms up completely transparently to the application.
 
 **Writes remain authoritative:**
 Write operations always travel to the centralised primary database regardless of where True Cache is deployed, ensuring a single source of truth.
@@ -139,12 +139,12 @@ Write operations always travel to the centralised primary database regardless of
 ## How Your Business Can Benefit from Oracle True Cache
 
 ### Cost Savings:
-- **Improve application performance without rewriting applications** — no development cost to adopt True Cache
-- **No risk and complexity of additional caching products and skills** — eliminate the operational overhead of a separate caching tier
-- **Single cache for different data types and formats** — one service handles document, relational, row, and columnar data
-- **Offload caching to commodity hardware from the database** — right-size the primary database and serve reads from lower-cost nodes
-- **Stronger security, which comes with Oracle AI Database** — security, auditing, and encryption extend to the cache tier automatically
-- **Leverage the full power of Oracle AI Database** — True Cache is a first-class feature, not a bolt-on
+- **Improve application performance without rewriting applications** - no development cost to adopt True Cache
+- **No risk and complexity of additional caching products and skills** - eliminate the operational overhead of a separate caching tier
+- **Single cache for different data types and formats** - one service handles document, relational, row, and columnar data
+- **Offload caching to commodity hardware from the database** - right-size the primary database and serve reads from lower-cost nodes
+- **Stronger security, which comes with Oracle AI Database** - security, auditing, and encryption extend to the cache tier automatically
+- **Leverage the full power of Oracle AI Database** - True Cache is a first-class feature, not a bolt-on
 
 ## Customer Usage Examples
 
@@ -174,7 +174,7 @@ Application
 
 - **Reads**: Served from True Cache at microsecond latency
 - **Writes**: Routed to Primary DB for full ACID durability
-- **Sync**: Redo technology propagates changes instantly — no application involvement
+- **Sync**: Redo technology propagates changes instantly, no application involvement
 
 ### Supported Data Types:
 - Relational (row format)
@@ -198,4 +198,4 @@ Application
 
 - **Author**: Francis Regalado, Database Product Manager
 - **Contributors**: 
-- **Last Updated**: February 2026
+- **Last Updated**: Francis Regalado, February 2026
