@@ -850,8 +850,12 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
    STAGE ROUTER
 ══════════════════════════════════════════════════════════════════ */
 async function runStage(n) {
+    // Disable all nav buttons while running
     document.querySelectorAll('.btn').forEach(b => { if (b.id !== 'btnReset') b.disabled = true });
     dot(true);
+
+    // Clear the step log and value card so content replaces, not accumulates
+    document.getElementById('stepLog').innerHTML = '';
 
     switch(n) {
         case 1: await stageOne();   break;
@@ -861,11 +865,22 @@ async function runStage(n) {
         case 5: await stageFive();  break;
     }
 
+    // Mark current as completed
     document.getElementById(btns[n]).classList.add('completed');
-    document.getElementById(btns[n]).disabled = false;
-    if (n < 5) {
-        document.getElementById(btns[n + 1]).disabled = false;
+
+    // Re-enable all previously completed stages + the current one + the next one
+    for (let i = 1; i <= 5; i++) {
+        const btnEl = document.getElementById(btns[i]);
+        if (i <= n) {
+            // Already visited or just completed — always re-enable
+            btnEl.disabled = false;
+        } else if (i === n + 1) {
+            // Unlock next stage
+            btnEl.disabled = false;
+        }
+        // Stages beyond n+1 stay disabled
     }
+
     dot(false);
 }
 
